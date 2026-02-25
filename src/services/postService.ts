@@ -6,7 +6,10 @@ export interface Post {
   _id: number;
   url_image: string;
   description?: string;
-  likes?: number;
+  likes?: number; // Legacy field name
+  like_count?: number; // API response field name
+  is_liked?: boolean; // Whether current user has liked this post (from API)
+  isLikedByCurrentUser?: boolean; // Alternative field name
   created_at: string | Date;
   updated_at?: string | Date;
 }
