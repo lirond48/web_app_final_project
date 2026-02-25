@@ -70,6 +70,14 @@ const Feed: React.FC = () => {
           <h1>Feed</h1>
           <div className="feed-header-actions">
             <span className="welcome-text">Welcome, {userName || 'Guest'}!</span>
+            {user && (
+              <button 
+                onClick={() => navigate(`/user/${user.user_id}`)} 
+                className="btn-user-details"
+              >
+                User Details
+              </button>
+            )}
             <button 
               onClick={() => navigate('/upload')} 
               className="btn-upload-header"

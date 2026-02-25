@@ -59,13 +59,14 @@ class AuthService {
     }
   }
 
-  async logout(): Promise<LogoutResponse> {
+  async logout(refreshToken: string): Promise<LogoutResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ refreshToken }),
       });
 
       if (!response.ok) {

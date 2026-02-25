@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { authService, LoginCredentials } from "../services/authService";
 
-type User = { username: string; email: string; user_id: number };
+type User = { username: string; email: string; user_id: string };
 
 type AuthState = {
   isAuthenticated: boolean;
@@ -30,7 +30,7 @@ function getInitialAuthState(): AuthState {
       isAuthenticated: true,
       isLoading: false,
       error: null,
-      user: { user_id: Number(user_id), username, email: email ?? "" },
+      user: { user_id: user_id, username, email: email ?? "" },
     };
   }
 
@@ -57,7 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
           isLoading: false,
           error: null,
-          user: { username: response.username, email: response.email, user_id: response.user_id },
+          user: { 
+            username: response.username, 
+            email: response.email, 
+            user_id: response.user_id.toString() 
+          },
         });
 
         return { success: true };
@@ -77,7 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      await authService.logout();
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) {
+        await authService.logout(refreshToken);
+      }
     } finally {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
