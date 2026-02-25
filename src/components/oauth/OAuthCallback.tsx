@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 /**
- * This page is the landing page after Google/Facebook OAuth redirect.
+ * This page is the landing page after Google OAuth redirect.
  * The backend sends tokens and user info in the URL fragment (#...).
  */
 const OAuthCallback: React.FC = () => {
