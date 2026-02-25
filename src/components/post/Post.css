@@ -77,6 +77,12 @@
   word-wrap: break-word;
 }
 
+.post-actions {
+  padding: 12px 20px;
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .post-card {
