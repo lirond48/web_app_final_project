@@ -1,9 +1,15 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { postService, Post } from '../../services/postService';
 import { useAuth } from '../../auth/AuthContext';
 import PostComponent from '../post/Post';
 import './Feed.css';
+
+const SearchIcon = () => (
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M10.5 3a7.5 7.5 0 1 1 4.72 13.33l4.22 4.23a.75.75 0 1 1-1.06 1.06l-4.23-4.22A7.5 7.5 0 0 1 10.5 3Zm0 1.5a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z" />
+  </svg>
+);
 
 const Feed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -13,18 +19,7 @@ const Feed: React.FC = () => {
   const userName = user?.username ?? "Guest";
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //    // string | null
-  //   if(!token) {
-  //     navigate('/login');
-  //     return;
-  //   }
-  //   fetchPosts();
-  // }, []);
-
   useEffect(() => {
-    // Redirect to login if not authenticated
-    // Temporarily disabled for testing
     if (!isAuthenticated) {
       navigate('/login');
       return;
@@ -36,15 +31,13 @@ const Feed: React.FC = () => {
   const fetchPosts = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const fetchedPosts = await postService.getPosts();
-      console.log('Fetched posts:', fetchedPosts);
       setPosts(fetchedPosts);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
       setError(errorMessage);
-      console.error('Error fetching posts:', err);
     } finally {
       setIsLoading(false);
     }
@@ -66,28 +59,31 @@ const Feed: React.FC = () => {
   };
 
   if (!isAuthenticated) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   return (
     <div className="feed-container">
       <header className="feed-header">
         <div className="feed-header-content">
-          <h1>Feed</h1>
+          <h1>StyleShare</h1>
           <div className="feed-header-actions">
             <span className="welcome-text">Welcome, {userName || 'Guest'}!</span>
+            <button
+              type="button"
+              onClick={() => navigate('/search')}
+              className="btn-search-header"
+              aria-label="Open Search Looks"
+            >
+              <SearchIcon />
+              <span>Search</span>
+            </button>
             {user && (
-              <button 
-                onClick={() => navigate(`/user/${user.user_id}`)} 
-                className="btn-user-details"
-              >
+              <button onClick={() => navigate(`/user/${user.user_id}`)} className="btn-user-details">
                 User Details
               </button>
             )}
-            <button 
-              onClick={() => navigate('/upload')} 
-              className="btn-upload-header"
-            >
+            <button onClick={() => navigate('/upload')} className="btn-upload-header">
               + New Post
             </button>
             {isAuthenticated && (
@@ -103,10 +99,14 @@ const Feed: React.FC = () => {
         <section className="feed-hero ui-card">
           <div className="feed-hero-copy">
             <h2>Build a better looking feed</h2>
-            <p>Share image-first posts, keep your profile updated, and engage with comments and likes.</p>
+            <p>Share image-first posts, keep your profile updated, and discover looks by season, event, or vibe.</p>
             <div className="feed-hero-actions">
               <button onClick={() => navigate('/upload')} className="btn-upload-header btn-primary">
                 Upload New Post
+              </button>
+              <button onClick={() => navigate('/search')} className="btn-search-header btn-search-hero" type="button">
+                <SearchIcon />
+                <span>Search Looks</span>
               </button>
               {user && (
                 <button onClick={() => navigate(`/user/${user.user_id}`)} className="btn-user-details">
@@ -125,8 +125,8 @@ const Feed: React.FC = () => {
               <span>Drag and drop image support</span>
             </article>
             <article>
-              <strong>Social-ready</strong>
-              <span>Likes and threaded comments</span>
+              <strong>Search-ready</strong>
+              <span>Find outfits by season, style, or occasion</span>
             </article>
           </div>
         </section>
@@ -169,6 +169,9 @@ const Feed: React.FC = () => {
             <button onClick={() => navigate('/upload')} className="btn-primary sidebar-btn">
               Create Post
             </button>
+            <button onClick={() => navigate('/search')} className="btn-secondary sidebar-btn" type="button">
+              Search Looks
+            </button>
             {user && (
               <button onClick={() => navigate(`/user/${user.user_id}`)} className="btn-secondary sidebar-btn">
                 Edit Profile
@@ -186,4 +189,3 @@ const Feed: React.FC = () => {
 };
 
 export default Feed;
-

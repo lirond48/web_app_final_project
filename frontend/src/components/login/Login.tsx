@@ -45,12 +45,10 @@ const Login: React.FC = () => {
     <div className="auth-page ui-shell">
       <div className="auth-layout">
         <MarketingHero
-          title="The creator workspace for modern visual posts."
-          subtitle="Upload in seconds, keep your feed beautiful, and manage your profile with a smooth, startup-grade experience."
-          primaryLabel="Create an Account"
+          title="Share your style with the world"
+          subtitle="Share seasonal looks and find the perfect outfit for work, weddings, or everyday style"
+          primaryLabel="Create Your Style Profile"
           primaryTo="/register"
-          secondaryLabel="Explore Feed"
-          secondaryTo="/feed"
         />
         <div className="login-card ui-card" id="auth-card">
           <div className="login-header">
@@ -110,14 +108,14 @@ const Login: React.FC = () => {
               >
                 Continue with Google
               </button>
-              <button
+              {/* <button
                 type="button"
                 className="btn-oauth btn-ghost"
                 onClick={handleFacebookLogin}
                 disabled={isLoading}
               >
                 Continue with Facebook
-              </button>
+              </button> */}
             </div>
 
             <div className="login-footer">
