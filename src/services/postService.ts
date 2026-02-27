@@ -1,5 +1,6 @@
 // Post service for API calls
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+const buildApiUrl = (path: string) => new URL(path, API_BASE_URL).toString();
 
 export interface Post {
   user_id: string | number;
@@ -10,6 +11,7 @@ export interface Post {
   like_count?: number; // API response field name
   is_liked?: boolean; // Whether current user has liked this post (from API)
   isLikedByCurrentUser?: boolean; // Alternative field name
+  comment_count?: number;
   created_at: string | Date;
   updated_at?: string | Date;
 }
@@ -33,9 +35,10 @@ class PostService {
     // Return mock data
     // return MOCK_POSTS;
     
-    // Original API call (commented out for now)
     try {
-      const response = await fetch(`${API_BASE_URL}/post`, {
+      const url = buildApiUrl("/post");
+      console.info(`[postService] GET ${url}`);
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -63,13 +66,30 @@ class PostService {
     formData.append("description", input.description);
     formData.append("image", input.image);
 
-    const response = await fetch(`${API_BASE_URL}/post`, {
+    const url = buildApiUrl("/post");
+    console.info(`[postService] POST ${url}`);
+    const response = await fetch(url, {
       method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: "Failed to create post" }));
+      throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async getPostById(postId: string | number): Promise<Post> {
+    const url = buildApiUrl(`/posts/${postId}`);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Failed to fetch post" }));
       throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
     }
 
@@ -84,10 +104,12 @@ class PostService {
       formData.append("description", input.description);
     }
     if (input.image) {
-      formData.append("image", input.image);
+      formData.append("file", input.image);
     }
 
-    const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+    const url = buildApiUrl(`/posts/${postId}`);
+    console.info(`[postService] PUT ${url}`);
+    const response = await fetch(url, {
       method: "PUT",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -105,7 +127,9 @@ class PostService {
 
   async deletePost(postId: string | number): Promise<void> {
     const token = localStorage.getItem("accessToken");
-    const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+    const url = buildApiUrl(`/posts/${postId}`);
+    console.info(`[postService] DELETE ${url}`);
+    const response = await fetch(url, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

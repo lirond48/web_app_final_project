@@ -5,6 +5,7 @@ import Register from "./components/register/Register";
 import Feed from "./components/feed/Feed";
 import Upload from "./components/upload/Upload";
 import User from "./components/user/User";
+import PostCommentsPage from "./components/comments/PostCommentsPage";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/user/:userId" element={<User />} />
+      <Route path="/posts/:postId/comments" element={<PostCommentsPage />} />
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );

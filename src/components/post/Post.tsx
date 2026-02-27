@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Post as PostType, postService } from "../../services/postService";
-import Comments from "../comments/Comments";
 import LikeButton from "../like-button/LikeButton";
 import { LikeState, likesService } from "../../services/likes-api.service";
 import { useAuth } from "../../auth/AuthContext";
+import { useNavigate } from "react-router-dom";
 import "./Post.css";
 
 interface PostProps {
@@ -15,11 +15,12 @@ interface PostProps {
 
 const Post: React.FC<PostProps> = ({ post, onPostUpdated, onPostDeleted, hideActions = false }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
   const imageSrc = post.url_image?.startsWith("http") ? post.url_image : `${apiBaseUrl}${post.url_image}`;
   const userIdStr = String(post.user_id);
-  const postIdStr = String(post._id);
   const isOwner = String(user?.user_id ?? "") === String(post.user_id);
+  const commentCount = post.comment_count ?? 0;
 
   const initialLikeCount = post.like_count ?? post.likes ?? 0;
   const initialIsLiked = post.is_liked ?? post.isLikedByCurrentUser ?? likesService.isPostLikedLocally(post._id);
@@ -217,18 +218,23 @@ const Post: React.FC<PostProps> = ({ post, onPostUpdated, onPostDeleted, hideAct
               </button>
             </div>
           )}
+          <button
+            className="post-action-btn"
+            type="button"
+            onClick={() => navigate(`/posts/${post._id}/comments`)}
+          >
+            Comments ({commentCount})
+          </button>
         </div>
       )}
-
-      {!hideActions && <Comments postId={postIdStr} />}
 
       {isEditing && (
         <div className="post-modal-backdrop" role="dialog" aria-modal="true">
           <div className="post-modal">
             <h3>Edit Post</h3>
-            <label htmlFor={`post-desc-${postIdStr}`}>Description</label>
+            <label htmlFor={`post-desc-${post._id}`}>Description</label>
             <textarea
-              id={`post-desc-${postIdStr}`}
+              id={`post-desc-${post._id}`}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="post-modal-input"
@@ -236,8 +242,8 @@ const Post: React.FC<PostProps> = ({ post, onPostUpdated, onPostDeleted, hideAct
               maxLength={500}
             />
 
-            <label htmlFor={`post-image-${postIdStr}`}>Replace image</label>
-            <input id={`post-image-${postIdStr}`} type="file" accept="image/*" onChange={handleImageChange} />
+            <label htmlFor={`post-image-${post._id}`}>Replace image</label>
+            <input id={`post-image-${post._id}`} type="file" accept="image/*" onChange={handleImageChange} />
 
             {(preview || post.url_image) && (
               <img className="post-modal-preview" src={preview || imageSrc} alt="Edit preview" />
