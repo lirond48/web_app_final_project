@@ -42,6 +42,7 @@ app.use(function(req, res, next) {
 });
 
 app.use("/post", postRoutes);
+app.use("/posts", postRoutes);
 app.use("/comment", commentRoutes);
 app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
