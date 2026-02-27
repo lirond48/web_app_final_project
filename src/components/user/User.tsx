@@ -1,13 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthContext';
-import { userService, User as UserType } from '../../services/userService';
-import { Post } from '../../services/postService';
-import PostComponent from '../post/Post';
-import './User.css';
-
-// ✅ הוסיפי/צרי את הקובץ הזה לפי מה ששלחתי לך:
-// src/services/uploadService.ts
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../../auth/AuthContext";
+import { userService, User as UserType } from "../../services/userService";
+import { Post } from "../../services/postService";
+import PostComponent from "../post/Post";
+import "./User.css";
 
 const User: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -21,27 +18,25 @@ const User: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editUsername, setEditUsername] = useState('');
-  const [editEmail, setEditEmail] = useState('');
+  const [editUsername, setEditUsername] = useState("");
+  const [editEmail, setEditEmail] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // ✅ Upload state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const defaultImage = '/src/assets/male-avatar-boy-face-man-user-7.svg';
+  const defaultImage = "/src/assets/male-avatar-boy-face-man-user-7.svg";
 
-  // ✅ בדיקה אם זה המשתמש המחובר שצופה בפרופיל
   const isCurrentUser = useMemo(() => {
-    const loggedInUserId = currentUser?.user_id || localStorage.getItem('user_id');
+    const loggedInUserId = currentUser?.user_id || localStorage.getItem("user_id");
     const profileUserId = user?.user_id || userId;
     return !!(loggedInUserId && profileUserId && String(loggedInUserId) === String(profileUserId));
   }, [currentUser?.user_id, user?.user_id, userId]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
@@ -52,10 +47,11 @@ const User: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, isAuthenticated, navigate]);
 
-  // ✅ ניקוי preview URL כשמשנים קובץ
   useEffect(() => {
     return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
     };
   }, [previewUrl]);
 
@@ -71,9 +67,9 @@ const User: React.FC = () => {
       setEditUsername(userData.username);
       setEditEmail(userData.email);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load user data';
+      const errorMessage = err instanceof Error ? err.message : "Failed to load user data";
       setError(errorMessage);
-      console.error('Error fetching user:', err);
+      console.error("Error fetching user:", err);
     } finally {
       setIsLoading(false);
     }
@@ -88,25 +84,23 @@ const User: React.FC = () => {
       const userPosts = await userService.getUserPosts(userId);
       setPosts(userPosts);
     } catch (err) {
-      console.error('Error fetching user posts:', err);
+      console.error("Error fetching user posts:", err);
     } finally {
       setIsLoadingPosts(false);
     }
   };
 
   const handleEdit = () => {
-    if (user) {
-      setEditUsername(user.username);
-      setEditEmail(user.email);
-      setIsEditing(true);
-    }
+    if (!user) return;
+    setEditUsername(user.username);
+    setEditEmail(user.email);
+    setIsEditing(true);
   };
 
   const handleCancel = () => {
-    if (user) {
-      setEditUsername(user.username);
-      setEditEmail(user.email);
-    }
+    if (!user) return;
+    setEditUsername(user.username);
+    setEditEmail(user.email);
     setIsEditing(false);
   };
 
@@ -120,41 +114,40 @@ const User: React.FC = () => {
       const updatedUser = await userService.updateUser(userId, {
         username: editUsername.trim(),
         email: editEmail.trim(),
-        // image לא משתנה כאן (זה בכפתור upload)
       });
 
       setUser(updatedUser);
       setIsEditing(false);
 
-      // אם זה המשתמש הנוכחי - אפשר לעדכן גם localStorage
       if (currentUser && String(currentUser.user_id) === String(userId)) {
-        localStorage.setItem('username', updatedUser.username);
-        localStorage.setItem('email', updatedUser.email);
+        localStorage.setItem("username", updatedUser.username);
+        localStorage.setItem("email", updatedUser.email);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update user';
+      const errorMessage = err instanceof Error ? err.message : "Failed to update user";
       setError(errorMessage);
-      console.error('Error updating user:', err);
+      console.error("Error updating user:", err);
     } finally {
       setIsSaving(false);
     }
   };
 
-  // ✅ בחירת קובץ + preview
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setSelectedFile(file);
 
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
 
     if (file) {
       setPreviewUrl(URL.createObjectURL(file));
-    } else {
-      setPreviewUrl(null);
+      return;
     }
+
+    setPreviewUrl(null);
   };
 
-  // ✅ העלאה לשרת + שמירה במסד (user.image)
   const handleUploadAvatar = async () => {
     if (!selectedFile || !userId || !user) return;
 
@@ -162,10 +155,7 @@ const User: React.FC = () => {
     setError(null);
 
     try {
-      // 1) Upload -> מחזיר URL
       const url = await userService.uploadImage(selectedFile);
-
-      // 2) Save URL on user
       const updatedUser = await userService.updateUser(userId, {
         username: user.username,
         email: user.email,
@@ -173,19 +163,16 @@ const User: React.FC = () => {
       });
 
       setUser(updatedUser);
-
-      // ניקוי UI של upload
       setSelectedFile(null);
       setPreviewUrl(null);
 
-      // אופציונלי: עדכון localStorage אם זה המשתמש הנוכחי
       if (currentUser && String(currentUser.user_id) === String(userId)) {
-        localStorage.setItem('image', url);
+        localStorage.setItem("image", url);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to upload image';
+      const errorMessage = err instanceof Error ? err.message : "Failed to upload image";
       setError(errorMessage);
-      console.error('Error uploading image:', err);
+      console.error("Error uploading image:", err);
     } finally {
       setIsUploading(false);
     }
@@ -209,7 +196,7 @@ const User: React.FC = () => {
       <div className="user-container">
         <div className="error-container">
           <p className="error-message">{error}</p>
-          <button onClick={() => navigate('/feed')} className="btn-retry">
+          <button onClick={() => navigate("/feed")} className="btn-retry">
             Back to Feed
           </button>
         </div>
@@ -223,8 +210,8 @@ const User: React.FC = () => {
     <div className="user-container">
       <header className="user-header">
         <div className="user-header-content">
-          <button onClick={() => navigate('/feed')} className="btn-back">
-            ← Back to Feed
+          <button onClick={() => navigate("/feed")} className="btn-back">
+            Back to Feed
           </button>
           <h1>User Details</h1>
         </div>
@@ -232,7 +219,7 @@ const User: React.FC = () => {
 
       <main className="user-main">
         <div className="user-profile-section">
-          <div className="user-profile-card">
+          <div className="user-profile-card ui-card">
             <div className="user-image-container">
               <img
                 src={previewUrl || user.image_url || defaultImage}
@@ -244,18 +231,20 @@ const User: React.FC = () => {
                 }}
               />
 
-              {/* ✅ Upload UI רק למשתמש הנוכחי */}
               {isCurrentUser && (
-                <div style={{ marginTop: 12 }}>
-                  <input type="file" accept="image/*" onChange={handleFileChange} />
-
-                  <button
-                    onClick={handleUploadAvatar}
-                    disabled={!selectedFile || isUploading}
-                    className="btn-save"
-                    style={{ marginLeft: 8 }}
-                  >
-                    {isUploading ? 'Uploading...' : 'Upload Image'}
+                <div className="avatar-upload-panel">
+                  <label htmlFor="avatar-upload" className="avatar-upload-label">
+                    Choose profile image
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="avatar-upload-input"
+                  />
+                  <button onClick={handleUploadAvatar} disabled={!selectedFile || isUploading} className="btn-save btn-primary">
+                    {isUploading ? "Uploading..." : "Upload Image"}
                   </button>
                 </div>
               )}
@@ -272,7 +261,7 @@ const User: React.FC = () => {
                       value={editUsername}
                       onChange={(e) => setEditUsername(e.target.value)}
                       disabled={isSaving}
-                      className="form-input"
+                      className="form-input ui-input"
                     />
                   </div>
 
@@ -284,23 +273,23 @@ const User: React.FC = () => {
                       value={editEmail}
                       onChange={(e) => setEditEmail(e.target.value)}
                       disabled={isSaving}
-                      className="form-input"
+                      className="form-input ui-input"
                     />
                   </div>
 
                   {error && <div className="error-message">{error}</div>}
 
                   <div className="form-actions">
-                    <button onClick={handleCancel} disabled={isSaving} className="btn-cancel">
+                    <button onClick={handleCancel} disabled={isSaving} className="btn-cancel btn-secondary">
                       Cancel
                     </button>
 
                     <button
                       onClick={handleSave}
                       disabled={isSaving || !editUsername.trim() || !editEmail.trim()}
-                      className="btn-save"
+                      className="btn-save btn-primary"
                     >
-                      {isSaving ? 'Saving...' : 'Save Changes'}
+                      {isSaving ? "Saving..." : "Save Changes"}
                     </button>
                   </div>
                 </div>
@@ -316,7 +305,7 @@ const User: React.FC = () => {
                   </div>
 
                   {isCurrentUser ? (
-                    <button onClick={handleEdit} className="btn-edit">
+                    <button onClick={handleEdit} className="btn-edit btn-secondary">
                       Edit Profile
                     </button>
                   ) : null}
@@ -326,7 +315,7 @@ const User: React.FC = () => {
           </div>
         </div>
 
-        <div className="user-posts-section">
+        <div className="user-posts-section ui-card">
           <h2>User Posts ({posts.length})</h2>
 
           {isLoadingPosts ? (

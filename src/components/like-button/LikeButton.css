@@ -2,76 +2,57 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 24px;
-  background-color: #ffffff;
-  color: #333333;
-  font-size: 14px;
-  font-weight: 500;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  outline: none;
-  user-select: none;
 }
 
 .like-button:hover:not(:disabled) {
-  border-color: #ff6b6b;
-  background-color: #fff5f5;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+  background: #fff4f8;
+  border-color: #ffc9d7;
+  box-shadow: 0 10px 20px rgba(214, 114, 145, 0.2);
 }
 
 .like-button:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(255, 107, 107, 0.15);
 }
 
 .like-button:focus-visible {
-  outline: 2px solid #ff6b6b;
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: var(--ring);
 }
 
-/* Liked state */
 .like-button.liked {
-  border-color: #ff6b6b;
-  background-color: #fff5f5;
-  color: #333333;
+  background: #fff0f5;
+  border-color: #ffb8cc;
 }
 
-.like-button.liked:hover:not(:disabled) {
-  background-color: #ffe0e0;
-  border-color: #ff6b6b;
-  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
-}
-
-/* Loading state */
-.like-button.loading {
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
+.like-button.loading,
 .like-button:disabled {
+  opacity: 0.64;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
-/* Icon styles */
 .like-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  transition: transform 0.2s ease-in-out;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
 }
 
 .like-button:hover:not(:disabled) .like-icon {
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 .like-button.liked .like-icon {
-  animation: heartBeat 0.3s ease-in-out;
+  animation: heartBeat 0.26s ease-in-out;
 }
 
 @keyframes heartBeat {
@@ -86,14 +67,13 @@
   }
 }
 
-/* Spinner for loading state */
 .spinner {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   border: 2px solid currentColor;
   border-top-color: transparent;
   border-radius: 50%;
-  animation: spin 0.6s linear infinite;
+  animation: spin 0.7s linear infinite;
 }
 
 @keyframes spin {
@@ -102,23 +82,6 @@
   }
 }
 
-/* Like count */
 .like-count {
-  font-weight: 600;
-  min-width: 20px;
-  text-align: center;
+  min-width: 1ch;
 }
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .like-button {
-    padding: 6px 12px;
-    font-size: 13px;
-  }
-
-  .like-icon {
-    width: 18px;
-    height: 18px;
-  }
-}
-
