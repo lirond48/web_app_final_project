@@ -18,7 +18,7 @@ type AuthContextValue = AuthState & {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// ✅ חשוב: init סינכרוני מ-localStorage (כדי ש-Feed לא יעשה redirect לפני שהספקנו לטעון)
+// Initialize synchronously from localStorage so guarded routes do not redirect before auth state is ready.
 function getInitialAuthState(): AuthState {
   const accessToken = localStorage.getItem("accessToken");
   const user_id = localStorage.getItem("user_id");
@@ -30,7 +30,7 @@ function getInitialAuthState(): AuthState {
       isAuthenticated: true,
       isLoading: false,
       error: null,
-      user: { user_id: user_id, username, email: email ?? "" },
+      user: { user_id, username, email: email ?? "" },
     };
   }
 
@@ -57,10 +57,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
           isLoading: false,
           error: null,
-          user: { 
-            username: response.username, 
-            email: response.email, 
-            user_id: response.user_id.toString() 
+          user: {
+            username: response.username,
+            email: response.email,
+            user_id: response.user_id.toString(),
           },
         });
 

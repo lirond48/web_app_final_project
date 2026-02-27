@@ -3,7 +3,7 @@ import { likesService, LikeState } from '../../services/likes-api.service';
 import './LikeButton.css';
 
 interface LikeButtonProps {
-  postId: number;
+  postId: string | number;
   likeCount: number;
   isLikedByCurrentUser: boolean;
   onLikeStateChanged?: (likeState: LikeState) => void;

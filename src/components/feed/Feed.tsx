@@ -11,8 +11,6 @@ const Feed: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, logout, user } = useAuth();
   const userName = user?.username ?? "Guest";
-  const token = localStorage.getItem("accessToken");
-  // const userName = localStorage.getItem("username");
   const navigate = useNavigate();
 
   // useEffect(() => {
@@ -94,7 +92,38 @@ const Feed: React.FC = () => {
       </header>
 
       <main className="feed-main">
-        <div className="feed-content">
+        <section className="feed-hero ui-card">
+          <div className="feed-hero-copy">
+            <h2>Build a better looking feed</h2>
+            <p>Share image-first posts, keep your profile updated, and engage with comments and likes.</p>
+            <div className="feed-hero-actions">
+              <button onClick={() => navigate('/upload')} className="btn-upload-header btn-primary">
+                Upload New Post
+              </button>
+              {user && (
+                <button onClick={() => navigate(`/user/${user.user_id}`)} className="btn-user-details btn-secondary">
+                  Open Profile
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="feed-hero-metrics">
+            <article>
+              <strong>{posts.length}</strong>
+              <span>Total posts</span>
+            </article>
+            <article>
+              <strong>Fast upload</strong>
+              <span>Drag and drop image support</span>
+            </article>
+            <article>
+              <strong>Social-ready</strong>
+              <span>Likes and threaded comments</span>
+            </article>
+          </div>
+        </section>
+
+        <div className="feed-layout">
           {isLoading ? (
             <div className="loading-container">
               <div className="spinner"></div>
@@ -121,6 +150,22 @@ const Feed: React.FC = () => {
               ))}
             </div>
           )}
+
+          <aside className="feed-sidebar ui-card">
+            <h3>Quick Actions</h3>
+            <button onClick={() => navigate('/upload')} className="btn-primary sidebar-btn">
+              Create Post
+            </button>
+            {user && (
+              <button onClick={() => navigate(`/user/${user.user_id}`)} className="btn-secondary sidebar-btn">
+                Edit Profile
+              </button>
+            )}
+            <button onClick={fetchPosts} className="btn-ghost sidebar-btn">
+              Refresh Feed
+            </button>
+            <p>Tip: keyboard users can Tab through every button and link with visible focus rings.</p>
+          </aside>
         </div>
       </main>
     </div>

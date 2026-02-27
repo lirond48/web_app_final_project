@@ -1,27 +1,27 @@
 // Likes service for API calls
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
 export interface LikePostResponseDto {
   message: string;
   liked: boolean; // Always true on success
   like_count: number; // Current like count for the post
-  postId?: number; // Optional: can be added if server returns it
+  postId?: string | number; // Optional: can be added if server returns it
 }
 
 export interface LikeState {
-  postId: number;
+  postId: string | number;
   likeCount: number;
   isLikedByCurrentUser: boolean;
 }
 
 export interface IsLikedResponse {
   isLiked: boolean;
-  postId: number;
+  postId: string | number;
 }
 
 export interface LikeCountResponse {
   like_count: number;
-  postId: number;
+  postId: string | number;
 }
 
 class LikesService {
@@ -29,7 +29,7 @@ class LikesService {
    * Like a post
    * POST /post/:post_id/like
    */
-  async likePost(postId: number): Promise<LikeState> {
+  async likePost(postId: string | number): Promise<LikeState> {
     try {
       const userId = localStorage.getItem('user_id');
       if (!userId) {
@@ -77,7 +77,7 @@ class LikesService {
    * Unlike a post
    * DELETE /post/:post_id/like
    */
-  async unlikePost(postId: number): Promise<LikeState> {
+  async unlikePost(postId: string | number): Promise<LikeState> {
     try {
       const userId = localStorage.getItem('user_id');
       if (!userId) {
@@ -125,9 +125,8 @@ class LikesService {
    * Check if post is liked by current user
    * GET /post/:post_id/like
    */
-  async isPostLikedByUser(postId: number): Promise<IsLikedResponse> {
+  async isPostLikedByUser(postId: string | number): Promise<IsLikedResponse> {
     try {
-      const token = localStorage.getItem('accessToken');
       const userId = localStorage.getItem('user_id');
       const response = await fetch(`${API_BASE_URL}/post/${postId}/like?user_id=${userId}`, {
         method: 'GET',
@@ -163,9 +162,8 @@ class LikesService {
    * Get like count for a post
    * GET /post/:post_id/likes/count
    */
-  async getPostLikesCount(postId: number): Promise<LikeCountResponse> {
+  async getPostLikesCount(postId: string | number): Promise<LikeCountResponse> {
     try {
-      const token = localStorage.getItem('accessToken');
       const response = await fetch(`${API_BASE_URL}/post/${postId}/likes/count`, {
         method: 'GET',
         headers: {
@@ -203,19 +201,19 @@ class LikesService {
     return `liked_posts_${userId || 'anonymous'}`;
   }
 
-  isPostLikedLocally(postId: number): boolean {
+  isPostLikedLocally(postId: string | number): boolean {
     try {
-      const likedPosts = JSON.parse(localStorage.getItem(this.getLikedPostsKey()) || '[]') as number[];
+      const likedPosts = JSON.parse(localStorage.getItem(this.getLikedPostsKey()) || "[]") as Array<string | number>;
       return likedPosts.includes(postId);
     } catch {
       return false;
     }
   }
 
-  setPostLikedLocally(postId: number, liked: boolean): void {
+  setPostLikedLocally(postId: string | number, liked: boolean): void {
     try {
       const key = this.getLikedPostsKey();
-      const likedPosts = JSON.parse(localStorage.getItem(key) || '[]') as number[];
+      const likedPosts = JSON.parse(localStorage.getItem(key) || "[]") as Array<string | number>;
       if (liked) {
         if (!likedPosts.includes(postId)) {
           likedPosts.push(postId);
@@ -235,7 +233,7 @@ class LikesService {
   /**
    * Map API response to normalized LikeState
    */
-  private mapToLikeState(postId: number, response: LikePostResponseDto): LikeState {
+  private mapToLikeState(postId: string | number, response: LikePostResponseDto): LikeState {
     return {
       postId,
       likeCount: response.like_count,
