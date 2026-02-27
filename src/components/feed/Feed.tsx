@@ -57,6 +57,14 @@ const Feed: React.FC = () => {
     }
   };
 
+  const handlePostUpdated = (updatedPost: Post) => {
+    setPosts((prev) => prev.map((item) => (String(item._id) === String(updatedPost._id) ? updatedPost : item)));
+  };
+
+  const handlePostDeleted = (postId: string | number) => {
+    setPosts((prev) => prev.filter((item) => String(item._id) !== String(postId)));
+  };
+
   if (!isAuthenticated) {
     return null; // Will redirect in useEffect
   }
@@ -101,7 +109,7 @@ const Feed: React.FC = () => {
                 Upload New Post
               </button>
               {user && (
-                <button onClick={() => navigate(`/user/${user.user_id}`)} className="btn-user-details btn-secondary">
+                <button onClick={() => navigate(`/user/${user.user_id}`)} className="btn-user-details">
                   Open Profile
                 </button>
               )}
@@ -146,7 +154,12 @@ const Feed: React.FC = () => {
           ) : (
             <div className="posts-list">
               {posts.map((post) => (
-                <PostComponent key={post._id} post={post} />
+                <PostComponent
+                  key={post._id}
+                  post={post}
+                  onPostUpdated={handlePostUpdated}
+                  onPostDeleted={handlePostDeleted}
+                />
               ))}
             </div>
           )}
