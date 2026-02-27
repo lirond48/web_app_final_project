@@ -7,8 +7,6 @@ interface MarketingHeroProps {
   subtitle: string;
   primaryLabel: string;
   primaryTo: string;
-  secondaryLabel: string;
-  secondaryTo: string;
 }
 
 const MarketingHero: React.FC<MarketingHeroProps> = ({
@@ -16,8 +14,6 @@ const MarketingHero: React.FC<MarketingHeroProps> = ({
   subtitle,
   primaryLabel,
   primaryTo,
-  secondaryLabel,
-  secondaryTo,
 }) => {
   return (
     <section className="marketing-hero ui-card">
@@ -29,9 +25,6 @@ const MarketingHero: React.FC<MarketingHeroProps> = ({
           <div className="hero-cta-row">
             <Link className="btn-primary hero-btn" to={primaryTo}>
               {primaryLabel}
-            </Link>
-            <Link className="btn-secondary hero-btn" to={secondaryTo}>
-              {secondaryLabel}
             </Link>
           </div>
         </div>
@@ -53,16 +46,16 @@ const MarketingHero: React.FC<MarketingHeroProps> = ({
       </div>
       <div className="hero-stats">
         <article>
-          <strong>3x faster</strong>
-          <span>Post publishing flow</span>
+          <strong>Seasonal inspiration</strong>
+          <span>Looks for winter, fall, summer, and spring</span>
         </article>
         <article>
-          <strong>100% responsive</strong>
-          <span>Mobile and desktop layouts</span>
+          <strong>Outfits for every occasion</strong>
+          <span>Work, weddings, sporty days and more</span>
         </article>
         <article>
-          <strong>Accessible by default</strong>
-          <span>Visible focus and keyboard-friendly UI</span>
+          <strong>Style community</strong>
+          <span>Share your looks and discover new trends</span>
         </article>
       </div>
     </section>

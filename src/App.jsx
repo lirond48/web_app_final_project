@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+﻿import { Routes, Route, Navigate } from "react-router-dom";
 import "./App.css";
 import Login from "./components/login/Login";
 import Register from "./components/register/Register";
@@ -6,12 +6,14 @@ import Feed from "./components/feed/Feed";
 import Upload from "./components/upload/Upload";
 import User from "./components/user/User";
 import PostCommentsPage from "./components/comments/PostCommentsPage";
+import SearchPage from "./components/search/SearchPage";
 
 function App() {
   return (
     <Routes>
       <Route path="/feed" element={<Feed />} />
       <Route path="/upload" element={<Upload />} />
+      <Route path="/search" element={<SearchPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/user/:userId" element={<User />} />
