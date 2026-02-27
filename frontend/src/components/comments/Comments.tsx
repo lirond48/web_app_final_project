@@ -21,7 +21,7 @@ const Comments: React.FC<CommentsProps> = ({ postId }) => {
   const fetchComments = async () => {
     setIsLoading(true);
     try {
-      const fetchedComments = await commentService.getComments(postId);
+      const fetchedComments = await commentService.getPostComments(postId);
       setComments(fetchedComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -39,15 +39,10 @@ const Comments: React.FC<CommentsProps> = ({ postId }) => {
 
     setIsSubmitting(true);
     try {
-      // Convert user identifier to number (assuming user_id is a number)
-      const userId = typeof user?.username === 'string' 
-        ? parseInt(user.username.replace(/\D/g, '')) || 0 
-        : 0;
-      
-      const addedComment = await commentService.addComment(
+      const addedComment = await commentService.createPostComment(
         postId,
         newComment.trim(),
-        userId
+        user.user_id
       );
       setComments([...comments, addedComment]);
       setNewComment('');

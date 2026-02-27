@@ -25,6 +25,7 @@ const User: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const defaultImage = "/src/assets/male-avatar-boy-face-man-user-7.svg";
 
@@ -178,6 +179,16 @@ const User: React.FC = () => {
     }
   };
 
+  const handlePostUpdated = (updatedPost: Post) => {
+    setPosts((prev) => prev.map((item) => (String(item._id) === String(updatedPost._id) ? updatedPost : item)));
+    setSelectedPost((prev) => (prev && String(prev._id) === String(updatedPost._id) ? updatedPost : prev));
+  };
+
+  const handlePostDeleted = (postId: string | number) => {
+    setPosts((prev) => prev.filter((item) => String(item._id) !== String(postId)));
+    setSelectedPost((prev) => (prev && String(prev._id) === String(postId) ? null : prev));
+  };
+
   if (!isAuthenticated) return null;
 
   if (isLoading) {
@@ -328,14 +339,47 @@ const User: React.FC = () => {
               <p>No posts available</p>
             </div>
           ) : (
-            <div className="posts-list">
+            <div className="user-posts-grid">
               {posts.map((post) => (
-                <PostComponent key={post._id} post={post} />
+                <button
+                  key={post._id}
+                  type="button"
+                  className="user-post-thumb"
+                  onClick={() => setSelectedPost(post)}
+                  aria-label={`Open post ${post._id}`}
+                >
+                  <img
+                    src={
+                      post.url_image.startsWith("http")
+                        ? post.url_image
+                        : `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}${post.url_image}`
+                    }
+                    alt={post.description || "Post image"}
+                  />
+                </button>
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {selectedPost && (
+        <div className="profile-post-modal-backdrop" role="dialog" aria-modal="true">
+          <div className="profile-post-modal ui-card">
+            <div className="profile-post-modal-header">
+              <h3>Post Details</h3>
+              <button type="button" className="btn-ghost" onClick={() => setSelectedPost(null)}>
+                Close
+              </button>
+            </div>
+            <PostComponent
+              post={selectedPost}
+              onPostUpdated={handlePostUpdated}
+              onPostDeleted={handlePostDeleted}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

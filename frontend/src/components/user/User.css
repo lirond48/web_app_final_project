@@ -181,6 +181,63 @@
   gap: 16px;
 }
 
+.user-posts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.user-post-thumb {
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 0;
+  background: #fff;
+  cursor: pointer;
+  aspect-ratio: 1 / 1;
+}
+
+.user-post-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.user-post-thumb:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: var(--shadow-soft);
+}
+
+.user-post-thumb:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+}
+
+.profile-post-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(15, 21, 44, 0.5);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.profile-post-modal {
+  width: min(840px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 14px;
+}
+
+.profile-post-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .loading-container,
 .error-container,
 .empty-container {
@@ -222,5 +279,15 @@
 
   .form-actions {
     flex-direction: column;
+  }
+
+  .user-posts-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .user-posts-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
