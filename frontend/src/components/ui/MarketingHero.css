@@ -1,0 +1,155 @@
+.marketing-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 34px;
+  border-radius: 28px;
+}
+
+.hero-gradient-layer {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 6% 18%, rgba(143, 214, 193, 0.42) 0%, transparent 42%),
+    radial-gradient(circle at 90% 12%, rgba(255, 199, 181, 0.44) 0%, transparent 44%),
+    linear-gradient(145deg, #edf2ff 0%, #fef5f9 48%, #f4fffb 100%);
+  z-index: 0;
+}
+
+.hero-top,
+.hero-stats {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-top {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  align-items: center;
+}
+
+.hero-copy h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.07;
+  letter-spacing: -0.03em;
+}
+
+.hero-copy p {
+  color: var(--text-secondary);
+  margin-top: 14px;
+  font-size: 1.05rem;
+  max-width: 48ch;
+}
+
+.hero-cta-row {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+  min-width: 174px;
+  padding: 0 18px;
+}
+
+.hero-visual {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hero-window {
+  width: min(420px, 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 20px 40px rgba(116, 124, 171, 0.28);
+}
+
+.hero-window-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5ecff;
+}
+
+.hero-window-bar span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #c7d4fb;
+}
+
+.hero-window-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.tile {
+  min-height: 84px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #f6f9ff 0%, #fdf5f9 100%);
+}
+
+.tile.large {
+  min-height: 140px;
+}
+
+.tile.wide {
+  grid-column: span 2;
+  min-height: 68px;
+}
+
+.hero-stats {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hero-stats article {
+  background: rgba(255, 255, 255, 0.77);
+  border: 1px solid #e8edff;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.hero-stats strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.hero-stats span {
+  color: var(--text-secondary);
+  font-size: 0.89rem;
+}
+
+@media (max-width: 960px) {
+  .marketing-hero {
+    padding: 22px;
+  }
+
+  .hero-top {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-visual {
+    justify-content: stretch;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-btn {
+    flex: 1;
+    min-width: 140px;
+  }
+}

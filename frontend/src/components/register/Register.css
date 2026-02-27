@@ -1,0 +1,81 @@
+.auth-page {
+  display: flex;
+  align-items: center;
+}
+
+.auth-layout {
+  width: min(1220px, 100%);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.register-card {
+  padding: 32px;
+}
+
+.register-header {
+  margin-bottom: 22px;
+}
+
+.register-header h2 {
+  font-size: clamp(1.6rem, 2.2vw, 2.1rem);
+}
+
+.register-header p {
+  margin-top: 6px;
+  color: var(--text-secondary);
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.btn-register {
+  min-height: 48px;
+  margin-top: 4px;
+}
+
+.register-footer {
+  margin-top: 8px;
+  color: var(--text-secondary);
+}
+
+.login-link {
+  font-weight: 700;
+}
+
+.error-message {
+  background: #ffecef;
+  color: #b63e52;
+  border: 1px solid #ffd3da;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 980px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .register-card {
+    padding: 24px;
+  }
+}

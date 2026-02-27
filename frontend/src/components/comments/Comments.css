@@ -1,0 +1,127 @@
+.comments-container {
+  border-top: 1px solid #ebf0ff;
+  padding: 14px 16px;
+  background: #f9fbff;
+}
+
+.comments-header h3 {
+  font-size: 1rem;
+}
+
+.comments-loading {
+  color: var(--text-secondary);
+  padding: 14px;
+  text-align: center;
+}
+
+.comments-list {
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.comment-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #ecf1ff;
+}
+
+.comment-item:last-child {
+  border-bottom: none;
+}
+
+.comment-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(130deg, #7c8dff 0%, #89ddc8 100%);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.comment-user-id {
+  font-weight: 700;
+}
+
+.comment-date {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+.comment-text {
+  margin-top: 4px;
+  color: var(--text-secondary);
+}
+
+.no-comments {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 12px;
+}
+
+.comment-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.comment-input {
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.comment-input:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+}
+
+.comment-submit-btn {
+  min-height: 42px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(130deg, #7c8dff 0%, #8fa2ff 56%, #89ddc8 100%);
+  cursor: pointer;
+}
+
+.comment-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(119, 133, 217, 0.32);
+}
+
+.comment-submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.comments-list::-webkit-scrollbar {
+  width: 7px;
+}
+
+.comments-list::-webkit-scrollbar-thumb {
+  background: #c7d4fb;
+  border-radius: 8px;
+}
+
+@media (max-width: 700px) {
+  .comment-form {
+    grid-template-columns: 1fr;
+  }
+}
