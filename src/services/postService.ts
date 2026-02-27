@@ -20,6 +20,11 @@ export interface CreatePostInput {
   image: File;
 }
 
+export interface UpdatePostInput {
+  description?: string;
+  image?: File;
+}
+
 class PostService {
   async getPosts(): Promise<Post[]> {
     // Simulate API delay
@@ -69,6 +74,48 @@ class PostService {
     }
 
     return response.json();
+  }
+
+  async updatePost(postId: string | number, input: UpdatePostInput): Promise<Post> {
+    const token = localStorage.getItem("accessToken");
+    const formData = new FormData();
+
+    if (typeof input.description === "string") {
+      formData.append("description", input.description);
+    }
+    if (input.image) {
+      formData.append("image", input.image);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Failed to update post" }));
+      throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  async deletePost(postId: string | number): Promise<void> {
+    const token = localStorage.getItem("accessToken");
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Failed to delete post" }));
+      throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+    }
   }
 }
 
