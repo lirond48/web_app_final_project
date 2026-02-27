@@ -1,0 +1,26 @@
+POST http://localhost:3000/comment
+Content-Type: application/json
+
+{
+  "post_id": "699f4a5c107409716f33a3e9",
+  "user_id": "699f49ff107409716f33a3e5",
+  "comment": "Bla Bla 1"
+}
+
+###
+GET http://localhost:3000/comment
+
+###
+GET http://localhost:3000/comment/6974af64e5adc749ab67a551
+
+###
+DELETE http://localhost:3000/comment/6
+
+###
+PUT http://localhost:3000/comment/2
+Content-Type: application/json
+
+{
+    "comment": "changed!!!!!"
+}
+

@@ -1,0 +1,30 @@
+POST http://localhost:3000/users
+Content-Type: application/json
+
+{
+  "username": "Liron Daniel",
+  "email": "liron48@gmail.com",
+  "password_hash": "Liron10!"
+}
+
+###
+GET http://localhost:3000/users
+
+###
+GET http://localhost:3000/users/1
+
+###
+GET http://localhost:3000/users/69750c06988af020dcba5d40/posts
+
+###
+DELETE http://localhost:3000/users/
+
+###
+PUT http://localhost:3000/users/69750bb7988af020dcba5d3a
+Content-Type: application/json
+
+{
+    "username": "lironi Daniel",
+    "email": "liron5555@gmail.com"
+}
+

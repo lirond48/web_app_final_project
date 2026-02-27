@@ -1,0 +1,33 @@
+###
+# Upload Image Test
+# This endpoint uploads an image file and returns the URL
+# Replace the file path with an actual image file on your system
+POST http://localhost:3000/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test-image.jpg"
+Content-Type: image/jpeg
+
+< ./test-image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+# Alternative format (if the above doesn't work, try this)
+# POST http://localhost:3000/upload
+# Content-Type: multipart/form-data
+# 
+# file=@./test-image.jpg
+
+###
+# Upload PNG Image Test
+POST http://localhost:3000/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="test-image.png"
+Content-Type: image/png
+
+< ./test-image.png
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+

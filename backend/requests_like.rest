@@ -1,0 +1,29 @@
+### Variables
+@baseUrl = http://localhost:3000
+@postId = 699f4a5c107409716f33a3e9
+@userId = 699f49ff107409716f33a3e5
+
+### Like a Post
+POST {{baseUrl}}/post/{{postId}}/like
+Content-Type: application/json
+
+{
+  "user_id": "699f49ff107409716f33a3e5"
+}
+
+### Unlike a Post
+DELETE {{baseUrl}}/post/{{postId}}/like
+Content-Type: application/json
+
+{
+  "user_id": "699f49ff107409716f33a3e5"
+}
+
+### Check if Post is Liked by User
+GET {{baseUrl}}/post/{{postId}}/like?user_id={{userId}}
+Content-Type: application/json
+
+### Get Post Likes Count (Public - no auth required)
+GET {{baseUrl}}/post/{{postId}}/likes/count
+Content-Type: application/json
+

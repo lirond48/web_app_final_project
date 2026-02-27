@@ -1,0 +1,19 @@
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "lirond48@gmail.com",
+  "password_hash": "Liron10!"
+}
+
+###
+POST http://localhost:3000/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEsImlhdCI6MTc2NzI4MzIyMCwiZXhwIjoxNzY3ODg4MDIwfQ.1e6cWrlIqjB8Y0GdRGt3pymJgnG1PBR4YXlUhADj0z4"
+}
+
+
+
+
