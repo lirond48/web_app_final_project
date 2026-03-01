@@ -59,9 +59,7 @@
 
 .post-image {
   width: 100%;
-  min-height: 260px;
-  max-height: 620px;
-  object-fit: cover;
+  height: auto;
   display: block;
 }
 
