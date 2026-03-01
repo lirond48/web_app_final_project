@@ -11,7 +11,7 @@ const getPost = async (req, res) => {
 
     const [posts, total] = await Promise.all([
       Post.aggregate([
-        { $sort: { created_at: -1 } },
+        { $sort: { created_at: -1, _id: -1 } },
         { $skip: skip },
         { $limit: limit },
         {
