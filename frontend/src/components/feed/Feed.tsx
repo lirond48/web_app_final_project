@@ -1,9 +1,11 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { postService, Post } from '../../services/postService';
 import { useAuth } from '../../auth/AuthContext';
 import PostComponent from '../post/Post';
 import './Feed.css';
+
+const LIMIT = 10;
 
 const SearchIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -13,54 +15,104 @@ const SearchIcon = () => (
 
 const Feed: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalPosts, setTotalPosts] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const { isAuthenticated, logout, user } = useAuth();
-  const userName = user?.username ?? "Guest";
+  const userName = user?.username ?? 'Guest';
   const navigate = useNavigate();
+
+  // Sentinel div watched by IntersectionObserver to trigger next page load
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  // Always points to the latest fetchMorePosts — avoids stale closure in observer
+  const fetchMoreRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-
     fetchPosts();
   }, [isAuthenticated, navigate]);
+
+  // Re-attach observer whenever posts change (sentinel enters DOM) or hasMore changes
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchMoreRef.current();
+        }
+      },
+      { rootMargin: '200px' },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [posts.length, hasMore]);
 
   const fetchPosts = async () => {
     setIsLoading(true);
     setError(null);
+    setPosts([]);
+    setHasMore(true);
 
     try {
-      const fetchedPosts = await postService.getPosts();
-      setPosts(fetchedPosts);
+      const result = await postService.getPosts(1, LIMIT);
+      setPosts(result.posts);
+      setPage(2);
+      setHasMore(result.pagination.hasMore);
+      setTotalPosts(result.pagination.total);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load posts';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Failed to load posts');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    const result = await logout();
-    if (result.success) {
-      navigate('/login');
+  const fetchMorePosts = async () => {
+    if (!hasMore || isFetchingMore) return;
+    setIsFetchingMore(true);
+
+    try {
+      const result = await postService.getPosts(page, LIMIT);
+      setPosts((prev) => [...prev, ...result.posts]);
+      setPage((prev) => prev + 1);
+      setHasMore(result.pagination.hasMore);
+      setTotalPosts(result.pagination.total);
+    } catch (err) {
+      console.error('Failed to load more posts:', err);
+    } finally {
+      setIsFetchingMore(false);
     }
   };
 
+  // Keep ref in sync with the latest version of fetchMorePosts
+  fetchMoreRef.current = fetchMorePosts;
+
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) navigate('/login');
+  };
+
   const handlePostUpdated = (updatedPost: Post) => {
-    setPosts((prev) => prev.map((item) => (String(item._id) === String(updatedPost._id) ? updatedPost : item)));
+    setPosts((prev) =>
+      prev.map((item) => (String(item._id) === String(updatedPost._id) ? updatedPost : item)),
+    );
   };
 
   const handlePostDeleted = (postId: string | number) => {
     setPosts((prev) => prev.filter((item) => String(item._id) !== String(postId)));
+    setTotalPosts((prev) => Math.max(0, prev - 1));
   };
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return (
     <div className="feed-container">
@@ -68,7 +120,7 @@ const Feed: React.FC = () => {
         <div className="feed-header-content">
           <h1>StyleShare</h1>
           <div className="feed-header-actions">
-            <span className="welcome-text">Welcome, {userName || 'Guest'}!</span>
+            <span className="welcome-text">Welcome, {userName}!</span>
             <button
               type="button"
               onClick={() => navigate('/search')}
@@ -117,7 +169,7 @@ const Feed: React.FC = () => {
           </div>
           <div className="feed-hero-metrics">
             <article>
-              <strong>{posts.length}</strong>
+              <strong>{totalPosts}</strong>
               <span>Total posts</span>
             </article>
             <article>
@@ -137,7 +189,7 @@ const Feed: React.FC = () => {
               <div className="spinner"></div>
               <p>Loading posts...</p>
             </div>
-          ) : error ? (
+          ) : error && posts.length === 0 ? (
             <div className="error-container">
               <p className="error-message">{error}</p>
               <button onClick={fetchPosts} className="btn-retry">
@@ -152,15 +204,31 @@ const Feed: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="posts-list">
-              {posts.map((post) => (
-                <PostComponent
-                  key={post._id}
-                  post={post}
-                  onPostUpdated={handlePostUpdated}
-                  onPostDeleted={handlePostDeleted}
-                />
-              ))}
+            <div className="posts-column">
+              <div className="posts-list">
+                {posts.map((post) => (
+                  <PostComponent
+                    key={post._id}
+                    post={post}
+                    onPostUpdated={handlePostUpdated}
+                    onPostDeleted={handlePostDeleted}
+                  />
+                ))}
+              </div>
+
+              {/* Sentinel: becomes visible as the user nears the bottom */}
+              <div ref={sentinelRef} className="scroll-sentinel" />
+
+              {isFetchingMore && (
+                <div className="loading-more">
+                  <div className="spinner-small" />
+                  <span>Loading more posts…</span>
+                </div>
+              )}
+
+              {!hasMore && (
+                <p className="end-of-feed">You've seen all posts</p>
+              )}
             </div>
           )}
 

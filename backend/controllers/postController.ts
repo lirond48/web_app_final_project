@@ -5,28 +5,33 @@ import mongoose from "mongoose";
 
 const getPost = async (req, res) => {
   try {
-    const posts = await Post.aggregate([
-      {
-        $lookup: {
-          from: "comments",
-          localField: "_id",
-          foreignField: "post_id",
-          as: "comments",
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const skip  = (page - 1) * limit;
+
+    const [posts, total] = await Promise.all([
+      Post.aggregate([
+        { $sort: { created_at: -1 } },
+        { $skip: skip },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "comments",
+            localField: "_id",
+            foreignField: "post_id",
+            as: "comments",
+          },
         },
-      },
-      {
-        $addFields: {
-          comment_count: { $size: "$comments" },
-        },
-      },
-      {
-        $project: {
-          comments: 0,
-        },
-      },
+        { $addFields: { comment_count: { $size: "$comments" } } },
+        { $project: { comments: 0 } },
+      ]),
+      Post.countDocuments(),
     ]);
 
-    res.json(posts);
+    res.json({
+      posts,
+      pagination: { page, limit, total, hasMore: skip + posts.length < total },
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

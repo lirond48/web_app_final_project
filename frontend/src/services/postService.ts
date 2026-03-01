@@ -27,16 +27,20 @@ export interface UpdatePostInput {
   image?: File;
 }
 
+export interface PaginatedPosts {
+  posts: Post[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+  };
+}
+
 class PostService {
-  async getPosts(): Promise<Post[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Return mock data
-    // return MOCK_POSTS;
-    
+  async getPosts(page = 1, limit = 10): Promise<PaginatedPosts> {
     try {
-      const url = buildApiUrl("/post");
+      const url = buildApiUrl(`/post?page=${page}&limit=${limit}`);
       console.info(`[postService] GET ${url}`);
       const response = await fetch(url, {
         method: 'GET',
@@ -50,8 +54,7 @@ class PostService {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
-      const data: Post[] = await response.json();
-      return data;
+      return response.json() as Promise<PaginatedPosts>;
     } catch (error) {
       if (error instanceof Error) {
         throw error;
