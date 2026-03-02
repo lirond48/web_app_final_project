@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Post as PostType, postService } from "../../services/postService";
 import LikeButton from "../like-button/LikeButton";
 import { LikeState, likesService } from "../../services/likes-api.service";
@@ -34,61 +34,6 @@ const Post: React.FC<PostProps> = ({ post, onPostUpdated, onPostDeleted, hideAct
   const [editError, setEditError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const hasCheckedLikeStatus = useRef<string | null>(null);
-  const isCheckingRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    if (post.is_liked !== undefined || post.isLikedByCurrentUser !== undefined) {
-      setIsLikedByCurrentUser(post.is_liked ?? post.isLikedByCurrentUser ?? false);
-      hasCheckedLikeStatus.current = null;
-      isCheckingRef.current = false;
-      return;
-    }
-
-    const currentPostId = String(post._id);
-    if (hasCheckedLikeStatus.current === currentPostId || isCheckingRef.current) {
-      return;
-    }
-
-    hasCheckedLikeStatus.current = currentPostId;
-    isCheckingRef.current = true;
-
-    const userId = localStorage.getItem("user_id");
-    if (!userId) {
-      setIsLikedByCurrentUser(false);
-      hasCheckedLikeStatus.current = null;
-      isCheckingRef.current = false;
-      return;
-    }
-
-    const checkLikeStatus = async () => {
-      try {
-        const likeStatus = await likesService.isPostLikedByUser(post._id);
-        if (hasCheckedLikeStatus.current === currentPostId) {
-          const localLiked = likesService.isPostLikedLocally(post._id);
-          setIsLikedByCurrentUser(localLiked || likeStatus.isLiked);
-        }
-      } catch (error) {
-        if (hasCheckedLikeStatus.current === currentPostId) {
-          console.error("Error checking like status:", error);
-        }
-      } finally {
-        if (hasCheckedLikeStatus.current === currentPostId) {
-          isCheckingRef.current = false;
-        }
-      }
-    };
-
-    checkLikeStatus();
-
-    return () => {
-      if (hasCheckedLikeStatus.current === currentPostId) {
-        hasCheckedLikeStatus.current = null;
-        isCheckingRef.current = false;
-      }
-    };
-  }, [post._id, post.is_liked, post.isLikedByCurrentUser]);
 
   useEffect(() => {
     setLikeCount(post.like_count ?? post.likes ?? 0);
