@@ -45,13 +45,6 @@ postSchema.pre("findOneAndDelete", async function () {
   }
 });
 
-postSchema.pre("findByIdAndDelete", async function () {
-  const doc = await this.model.findById(this.getQuery());
-  if (doc) {
-    await PostLike.deleteMany({ post_id: doc._id });
-  }
-});
-
 // Also handle direct delete operations
 postSchema.pre("deleteOne", { document: true, query: false }, async function () {
   await PostLike.deleteMany({ post_id: this._id });
