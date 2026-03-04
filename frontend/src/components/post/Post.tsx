@@ -18,7 +18,14 @@ const Post: React.FC<PostProps> = ({ post, onPostUpdated, onPostDeleted, hideAct
   const navigate = useNavigate();
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
   const imageSrc = post.url_image?.startsWith("http") ? post.url_image : `${apiBaseUrl}${post.url_image}`;
-  const userIdStr = String(post.user_id);
+  const displayName = (post.username || post.user?.username || "User").trim();
+  const avatarFromPost =
+    post.avatarUrl || post.profileImageUrl || post.user?.avatarUrl || post.user?.profileImageUrl || post.user?.image_url;
+  const avatarSrc = avatarFromPost
+    ? avatarFromPost.startsWith("http")
+      ? avatarFromPost
+      : `${apiBaseUrl}${avatarFromPost}`
+    : "";
   const isOwner = String(user?.user_id ?? "") === String(post.user_id);
   const commentCount = post.comment_count ?? 0;
 
@@ -119,10 +126,15 @@ const Post: React.FC<PostProps> = ({ post, onPostUpdated, onPostDeleted, hideAct
     <div className="post-card">
       <div className="post-header">
         <div className="post-user-info">
-          <div className="user-avatar">{userIdStr.charAt(0).toUpperCase()}</div>
-          <span className="user-id">User {post.user_id}</span>
+          <div className="user-avatar">
+            {avatarSrc ? (
+              <img src={avatarSrc} alt={displayName} className="user-avatar-image" />
+            ) : (
+              <span>{displayName.charAt(0).toUpperCase()}</span>
+            )}
+          </div>
+          <span className="user-id">{displayName}</span>
         </div>
-        <span className="post-id">#{post._id}</span>
       </div>
 
       {post.url_image && (
