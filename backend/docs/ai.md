@@ -24,8 +24,8 @@ Use placeholders only:
 
 ```env
 LLM_BASE_URL=http://10.10.248.41
-LLM_USER=your_basic_auth_user
-LLM_PASS=your_basic_auth_password
+LLM_USER="user"
+LLM_PASS="pass"
 LLM_MODE=mock
 ```
 

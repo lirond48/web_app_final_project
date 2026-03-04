@@ -49,6 +49,7 @@ app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/upload", multerRoutes);
 app.use("/", likeRoutes);
+// AI smart search entrypoint. Frontend calls /api/search; backend handles AI/caching/rate-limit internally.
 app.use("/api", searchRoutes);
 app.use("/public", express.static("public"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
