@@ -2,6 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../../services/authService';
 import MarketingHero from '../ui/MarketingHero';
+import BrandLogo from '../ui/BrandLogo';
 import './Register.css';
 
 const Register: React.FC = () => {
@@ -61,6 +62,9 @@ const Register: React.FC = () => {
           secondaryTo="/feed"
         />
         <div className="register-card ui-card">
+          <div className="auth-brand-wrap">
+            <BrandLogo showImage={false} showText={true} linkTo="/" className="auth-brand-logo auth-brand-wordmark" />
+          </div>
           <div className="register-header">
             <h2>Create Account</h2>
             <p>Set up your profile in under a minute.</p>
