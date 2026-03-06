@@ -1,4 +1,5 @@
 import { Post } from "./postService";
+import { apiFetch } from "./apiFetch";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
@@ -18,13 +19,9 @@ export interface UpdateUserData {
 class UserService {
   async getUser(userId: string): Promise<User> {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      const response = await apiFetch(`${API_BASE_URL}/users/${userId}`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -44,13 +41,9 @@ class UserService {
 
   async updateUser(userId: string, userData: UpdateUserData): Promise<User> {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      const response = await apiFetch(`${API_BASE_URL}/users/${userId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
 
@@ -71,13 +64,9 @@ class UserService {
 
   async getUserPosts(userId: string): Promise<Post[]> {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(`${API_BASE_URL}/users/${userId}/posts`, {
+      const response = await apiFetch(`${API_BASE_URL}/users/${userId}/posts`, {
         method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
