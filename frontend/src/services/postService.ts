@@ -1,4 +1,6 @@
 // Post service for API calls
+import { apiFetch } from "./apiFetch";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 const buildApiUrl = (path: string) => new URL(path, API_BASE_URL).toString();
 
@@ -7,6 +9,15 @@ export interface Post {
   _id: string | number;
   url_image: string;
   description?: string;
+  username?: string;
+  avatarUrl?: string;
+  profileImageUrl?: string;
+  user?: {
+    username?: string;
+    profileImageUrl?: string;
+    avatarUrl?: string;
+    image_url?: string;
+  };
   likes?: number; // Legacy field name
   like_count?: number; // API response field name
   is_liked?: boolean; // Whether current user has liked this post (from API)
@@ -100,7 +111,6 @@ class PostService {
   }
 
   async updatePost(postId: string | number, input: UpdatePostInput): Promise<Post> {
-    const token = localStorage.getItem("accessToken");
     const formData = new FormData();
 
     if (typeof input.description === "string") {
@@ -112,11 +122,8 @@ class PostService {
 
     const url = buildApiUrl(`/posts/${postId}`);
     console.info(`[postService] PUT ${url}`);
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
       body: formData,
     });
 
@@ -129,14 +136,10 @@ class PostService {
   }
 
   async deletePost(postId: string | number): Promise<void> {
-    const token = localStorage.getItem("accessToken");
     const url = buildApiUrl(`/posts/${postId}`);
     console.info(`[postService] DELETE ${url}`);
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
 
     if (!response.ok) {

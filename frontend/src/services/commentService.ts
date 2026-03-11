@@ -1,3 +1,5 @@
+import { apiFetch } from "./apiFetch";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 const buildApiUrl = (path: string) => new URL(path, API_BASE_URL).toString();
 
@@ -25,13 +27,9 @@ class CommentService {
   }
 
   async createPostComment(postId: string | number, comment: string, userId?: string): Promise<Comment> {
-    const token = localStorage.getItem("accessToken");
-    const response = await fetch(buildApiUrl(`/posts/${postId}/comments`), {
+    const response = await apiFetch(buildApiUrl(`/posts/${postId}/comments`), {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ comment, user_id: userId }),
     });
 

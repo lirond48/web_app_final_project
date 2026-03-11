@@ -16,14 +16,29 @@ const getPost = async (req, res) => {
         { $limit: limit },
         {
           $lookup: {
+            from: "users",
+            localField: "user_id",
+            foreignField: "_id",
+            as: "user",
+          },
+        },
+        {
+          $lookup: {
             from: "comments",
             localField: "_id",
             foreignField: "post_id",
             as: "comments",
           },
         },
+        { $addFields: { user: { $arrayElemAt: ["$user", 0] } } },
         { $addFields: { comment_count: { $size: "$comments" } } },
-        { $project: { comments: 0 } },
+        {
+          $addFields: {
+            username: "$user.username",
+            avatarUrl: "$user.image_url",
+          },
+        },
+        { $project: { comments: 0, user: 0 } },
       ]),
       Post.countDocuments(),
     ]);

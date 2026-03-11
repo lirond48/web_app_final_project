@@ -1,31 +1,75 @@
-﻿import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Post from "../post/Post";
+import { searchService } from "../../services/searchService";
 import "./searchPage.css";
 
-const RECOMMENDED = [
-  "Wedding",
-  "Work",
-  "Daily",
-  "Sporty",
-  "Streetwear",
-  "Formal",
-  "Party",
-  "Minimal",
-];
+const RECOMMENDED = ["Wedding", "Work", "Daily", "Sporty", "Streetwear", "Formal", "Party", "Minimal"];
+const MIN_QUERY_LENGTH = 3;
+const SEARCH_DEBOUNCE_MS = 500;
 
 export default function SearchPage() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [activeQuery, setActiveQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
+  const [version, setVersion] = useState(0);
 
   const handleSearch = (nextQuery = query) => {
-    setActiveQuery(nextQuery.trim());
+    setQuery(nextQuery);
+    setVersion((v) => v + 1);
   };
 
   const clearSearch = () => {
     setQuery("");
     setActiveQuery("");
+    setResults([]);
+    setError("");
+    setHasSearched(false);
   };
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < MIN_QUERY_LENGTH) {
+      setIsLoading(false);
+      setError("");
+      setResults([]);
+      setActiveQuery("");
+      setHasSearched(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setIsLoading(true);
+      setError("");
+      setHasSearched(true);
+      try {
+        const response = await searchService.searchPosts(trimmed, controller.signal);
+        setResults(Array.isArray(response.results) ? response.results : []);
+        setActiveQuery(trimmed);
+      } catch (err) {
+        if (controller.signal.aborted) {
+          return;
+        }
+        setResults([]);
+        setActiveQuery(trimmed);
+        setError(err instanceof Error ? err.message : "Search failed");
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [query, version]);
 
   return (
     <div className="search-page-shell">
@@ -54,7 +98,7 @@ export default function SearchPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               className="search-input"
-              placeholder="Search by keywords (e.g., wedding, work, sporty, streetwear)…"
+              placeholder="Search by keywords (e.g., elegant white wedding)"
               aria-label="Search looks by keyword"
             />
             {query.length > 0 && (
@@ -63,8 +107,8 @@ export default function SearchPage() {
               </button>
             )}
           </div>
-          <button type="submit" className="search-submit-btn">
-            Search
+          <button type="submit" className="search-submit-btn" disabled={isLoading}>
+            {isLoading ? "Searching..." : "Search"}
           </button>
         </form>
 
@@ -76,10 +120,7 @@ export default function SearchPage() {
                 key={item}
                 type="button"
                 className={`recommended-chip ${query.toLowerCase() === item.toLowerCase() ? "chip-active" : ""}`}
-                onClick={() => {
-                  setQuery(item);
-                  handleSearch(item);
-                }}
+                onClick={() => handleSearch(item)}
               >
                 {item}
               </button>
@@ -92,7 +133,23 @@ export default function SearchPage() {
             <h2>Results</h2>
             {activeQuery ? <span>for "{activeQuery}"</span> : <span>not searched yet</span>}
           </div>
-          <div className="results-empty">Results will appear here once search is connected.</div>
+
+          {isLoading && <div className="results-empty">Searching...</div>}
+          {!isLoading && error && <div className="results-empty">Search failed: {error}</div>}
+          {!isLoading && !error && hasSearched && results.length === 0 && <div className="results-empty">No results found.</div>}
+          {!isLoading && !error && !hasSearched && (
+            <div className="results-empty">Type at least 3 characters to search.</div>
+          )}
+          {!isLoading && !error && results.length > 0 && (
+            <div className="results-list">
+              {results.map((item, index) => (
+                <article key={`${item?.post?._id ?? index}`} className="result-item">
+                  <div className="result-meta">Score {item.score}</div>
+                  <Post post={item.post} hideActions />
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       </section>
     </div>
