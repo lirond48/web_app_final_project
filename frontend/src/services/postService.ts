@@ -9,6 +9,15 @@ export interface Post {
   _id: string | number;
   url_image: string;
   description?: string;
+  username?: string;
+  avatarUrl?: string;
+  profileImageUrl?: string;
+  user?: {
+    username?: string;
+    profileImageUrl?: string;
+    avatarUrl?: string;
+    image_url?: string;
+  };
   likes?: number; // Legacy field name
   like_count?: number; // API response field name
   is_liked?: boolean; // Whether current user has liked this post (from API)

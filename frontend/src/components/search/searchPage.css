@@ -225,6 +225,23 @@
   padding: 16px;
 }
 
+.results-list {
+  margin-top: 14px;
+  display: grid;
+  gap: 14px;
+}
+
+.result-item {
+  display: grid;
+  gap: 8px;
+}
+
+.result-meta {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: right;
+}
+
 @media (max-width: 760px) {
   .search-page-shell {
     padding: 16px 10px 20px;

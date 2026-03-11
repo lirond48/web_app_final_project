@@ -1,0 +1,22 @@
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-logo-image {
+  display: block;
+  object-fit: contain;
+}
+
+.brand-logo-text {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.brand-logo-fallback {
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
