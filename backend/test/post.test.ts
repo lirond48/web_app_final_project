@@ -3,145 +3,224 @@ const request = require("supertest");
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const postRoutes = require("../routes/postRoutes");
+const jwt = require("jsonwebtoken");
+const path = require("path");
+const fs = require("fs");
+const postRoutes = require("../routes/postRoutes").default;
 
-// Create test app
+process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "test_access_secret_key";
+
+const uploadsDir = path.join(process.cwd(), "public", "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/post", postRoutes);
+app.use(express.static(path.join(process.cwd(), "public")));
 
-// Test database connection
 const TEST_MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/test_posts";
+const testImagePath = path.join(process.cwd(), "test", "avatar.png");
 
 describe("Posts API Tests", () => {
+  let User: any;
+  let Post: any;
+
   beforeAll(async () => {
-    // Connect to test database
     await mongoose.connect(TEST_MONGODB_URI);
+    User = require("../model/userModel").default;
+    Post = require("../model/postModel").default;
+    await User.syncIndexes();
+    await Post.syncIndexes();
   });
 
   afterAll(async () => {
-    // Clean up: close database connection
     await mongoose.connection.close();
   });
 
   beforeEach(async () => {
-    // Clean up posts collection before each test
-    const Post = require("../model/postModel");
     await Post.deleteMany({});
+    await User.deleteMany({});
   });
 
   describe("POST /post - Create Post", () => {
     test("should create a new post successfully", async () => {
-      const postData = {
-        post_id: 9,
-        user_id: 77
-      };
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
 
       const response = await request(app)
         .post("/post")
-        .send(postData)
+        .field("user_id", user._id.toString())
+        .attach("image", testImagePath)
         .expect(201);
 
-      expect(response.body).toHaveProperty("post_id", 9);
-      expect(response.body).toHaveProperty("user_id", 77);
+      expect(response.body).toHaveProperty("_id");
+      expect(response.body.user_id.toString()).toBe(user._id.toString());
+      expect(response.body).toHaveProperty("url_image");
+      expect(response.body).toHaveProperty("comment_count", 0);
+    });
+
+    test("should return 400 if user_id is missing", async () => {
+      const response = await request(app)
+        .post("/post")
+        .attach("image", testImagePath)
+        .expect(400);
+
+      expect(response.body).toHaveProperty("error");
+    });
+
+    test("should return 400 if image is missing", async () => {
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
+
+      const response = await request(app)
+        .post("/post")
+        .send({ user_id: user._id.toString() })
+        .expect(400);
+
+      expect(response.body).toHaveProperty("error", "image file is required");
     });
   });
 
   describe("GET /post - Get All Posts", () => {
-    test("should get all posts", async () => {
-      const Post = require("../model/postModel");
+    test("should get all posts with pagination", async () => {
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
+
       await Post.create([
-        { post_id: 1, user_id: 100 },
-        { post_id: 2, user_id: 200 }
+        { user_id: user._id, url_image: "/uploads/img1.jpg", created_at: new Date() },
+        { user_id: user._id, url_image: "/uploads/img2.jpg", created_at: new Date() },
       ]);
 
-      const response = await request(app)
-        .get("/post")
-        .expect(200);
+      const response = await request(app).get("/post").expect(200);
 
-      expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBe(2);
+      expect(response.body).toHaveProperty("posts");
+      expect(Array.isArray(response.body.posts)).toBe(true);
+      expect(response.body.posts.length).toBe(2);
+      expect(response.body).toHaveProperty("pagination");
     });
   });
 
-  describe("GET /post/:post_id - Get Post by ID", () => {
-    test("should get a post by post_id", async () => {
-      const Post = require("../model/postModel");
-      await Post.create({ post_id: 1, user_id: 100 });
+  describe("GET /post/:id - Get Post by ID", () => {
+    test("should get a post by id", async () => {
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
+      const post = await Post.create({ user_id: user._id, url_image: "/uploads/img.jpg", created_at: new Date() });
 
-      const response = await request(app)
-        .get("/post/1")
-        .expect(200);
+      const response = await request(app).get(`/post/${post._id}`).expect(200);
 
-      expect(response.body).toHaveProperty("post_id", 1);
-      expect(response.body).toHaveProperty("user_id", 100);
+      expect(response.body._id.toString()).toBe(post._id.toString());
     });
 
     test("should return 404 if post not found", async () => {
-      const response = await request(app)
-        .get("/post/999")
-        .expect(404);
+      const fakeId = new mongoose.Types.ObjectId();
+
+      const response = await request(app).get(`/post/${fakeId}`).expect(404);
 
       expect(response.body).toHaveProperty("error", "Post not found");
     });
 
-    test("should return 400 if post_id is not a number", async () => {
-      const response = await request(app)
-        .get("/post/abc")
-        .expect(400);
+    test("should return 400 if id is not a valid ObjectId", async () => {
+      const response = await request(app).get("/post/not-a-valid-id").expect(400);
 
-      expect(response.body).toHaveProperty("error", "post_id must be a number");
+      expect(response.body).toHaveProperty("error", "Invalid id format");
     });
   });
 
-  describe("PUT /post/:post_id - Update Post", () => {
+  describe("PUT /post/:id - Update Post", () => {
     test("should update a post successfully", async () => {
-      const Post = require("../model/postModel");
-      await Post.create({ post_id: 1, user_id: 100 });
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
+      const post = await Post.create({ user_id: user._id, url_image: "/uploads/img.jpg", created_at: new Date() });
 
-      const updateData = {
-        user_id: 200
-      };
+      const token = jwt.sign({ sub: user._id.toString() }, process.env.JWT_ACCESS_SECRET, { expiresIn: "1h" });
 
       const response = await request(app)
-        .put("/post/1")
-        .send(updateData)
+        .put(`/post/${post._id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .field("description", "Updated description")
         .expect(200);
 
-      expect(response.body).toHaveProperty("post_id", 1);
-      expect(response.body).toHaveProperty("user_id", 200);
+      expect(response.body).toHaveProperty("description", "Updated description");
+    });
+
+    test("should return 401 if no auth token provided", async () => {
+      const fakeId = new mongoose.Types.ObjectId();
+
+      await request(app).put(`/post/${fakeId}`).send({ description: "test" }).expect(401);
+    });
+
+    test("should return 403 if user does not own the post", async () => {
+      const owner = await User.create({ username: "owner", email: "owner@example.com", password_hash: "hashedpassword" });
+      const other = await User.create({ username: "other", email: "other@example.com", password_hash: "hashedpassword" });
+      const post = await Post.create({ user_id: owner._id, url_image: "/uploads/img.jpg", created_at: new Date() });
+
+      const token = jwt.sign({ sub: other._id.toString() }, process.env.JWT_ACCESS_SECRET, { expiresIn: "1h" });
+
+      const response = await request(app)
+        .put(`/post/${post._id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .field("description", "Hijacked")
+        .expect(403);
+
+      expect(response.body).toHaveProperty("error", "You can only update your own posts");
     });
 
     test("should return 404 if post not found", async () => {
-      const updateData = {
-        user_id: 200
-      };
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
+      const token = jwt.sign({ sub: user._id.toString() }, process.env.JWT_ACCESS_SECRET, { expiresIn: "1h" });
+      const fakeId = new mongoose.Types.ObjectId();
 
       const response = await request(app)
-        .put("/post/999")
-        .send(updateData)
+        .put(`/post/${fakeId}`)
+        .set("Authorization", `Bearer ${token}`)
+        .field("description", "test")
         .expect(404);
 
       expect(response.body).toHaveProperty("error", "Post not found");
     });
   });
 
-  describe("DELETE /post/:post_id - Delete Post", () => {
+  describe("DELETE /post/:id - Delete Post", () => {
     test("should delete a post successfully", async () => {
-      const Post = require("../model/postModel");
-      await Post.create({ post_id: 1, user_id: 100 });
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
+      const post = await Post.create({ user_id: user._id, url_image: "/uploads/img.jpg", created_at: new Date() });
+      const token = jwt.sign({ sub: user._id.toString() }, process.env.JWT_ACCESS_SECRET, { expiresIn: "1h" });
 
       const response = await request(app)
-        .delete("/post/1")
+        .delete(`/post/${post._id}`)
+        .set("Authorization", `Bearer ${token}`)
         .expect(200);
 
       expect(response.body).toHaveProperty("message", "Post deleted successfully");
     });
 
-    test("should return 404 if post not found", async () => {
+    test("should return 401 if no auth token provided", async () => {
+      const fakeId = new mongoose.Types.ObjectId();
+
+      await request(app).delete(`/post/${fakeId}`).expect(401);
+    });
+
+    test("should return 403 if user does not own the post", async () => {
+      const owner = await User.create({ username: "owner", email: "owner@example.com", password_hash: "hashedpassword" });
+      const other = await User.create({ username: "other", email: "other@example.com", password_hash: "hashedpassword" });
+      const post = await Post.create({ user_id: owner._id, url_image: "/uploads/img.jpg", created_at: new Date() });
+
+      const token = jwt.sign({ sub: other._id.toString() }, process.env.JWT_ACCESS_SECRET, { expiresIn: "1h" });
+
       const response = await request(app)
-        .delete("/post/999")
+        .delete(`/post/${post._id}`)
+        .set("Authorization", `Bearer ${token}`)
+        .expect(403);
+
+      expect(response.body).toHaveProperty("error", "You can only delete your own posts");
+    });
+
+    test("should return 404 if post not found", async () => {
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
+      const token = jwt.sign({ sub: user._id.toString() }, process.env.JWT_ACCESS_SECRET, { expiresIn: "1h" });
+      const fakeId = new mongoose.Types.ObjectId();
+
+      const response = await request(app)
+        .delete(`/post/${fakeId}`)
+        .set("Authorization", `Bearer ${token}`)
         .expect(404);
 
       expect(response.body).toHaveProperty("error", "Post not found");

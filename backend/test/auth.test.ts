@@ -4,7 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
-const authRoutes = require("../routes/authRoutes");
+const authRoutes = require("../routes/authRoutes").default;
 
 // Create test app
 const app = express();
@@ -20,41 +20,34 @@ process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || "test_access_se
 process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || "test_refresh_secret_key";
 
 describe("Auth API Tests", () => {
+  let User: any;
+
   beforeAll(async () => {
-    // Connect to test database
     await mongoose.connect(TEST_MONGODB_URI);
+    User = require("../model/userModel").default;
+    await User.syncIndexes();
   });
 
   afterAll(async () => {
-    // Clean up: close database connection
     await mongoose.connection.close();
   });
 
   beforeEach(async () => {
-    // Clean up users collection before each test
-    const User = require("../model/userModel");
     await User.deleteMany({});
   });
 
   describe("POST /auth/login - Login", () => {
     test("should login successfully with valid credentials", async () => {
-      const User = require("../model/userModel");
       const hashedPassword = await bcrypt.hash("password123", 10);
       await User.create({
-        user_id: 1,
         username: "testuser",
         email: "test@example.com",
-        password_hash: hashedPassword
+        password_hash: hashedPassword,
       });
-
-      const loginData = {
-        email: "test@example.com",
-        password_hash: "password123"
-      };
 
       const response = await request(app)
         .post("/auth/login")
-        .send(loginData)
+        .send({ email: "test@example.com", password_hash: "password123" })
         .expect(200);
 
       expect(response.body).toHaveProperty("accessToken");
@@ -63,184 +56,152 @@ describe("Auth API Tests", () => {
       expect(typeof response.body.refreshToken).toBe("string");
       expect(response.body.accessToken.length).toBeGreaterThan(0);
       expect(response.body.refreshToken.length).toBeGreaterThan(0);
+      expect(response.body).toHaveProperty("success", true);
 
-      // Verify refresh token hash is saved in database
       const user = await User.findOne({ email: "test@example.com" });
       expect(user.refresh_token_hash).toBeTruthy();
     });
 
     test("should return 400 if email is missing", async () => {
-      const loginData = {
-        password_hash: "password123"
-      };
-
       const response = await request(app)
         .post("/auth/login")
-        .send(loginData)
+        .send({ password_hash: "password123" })
         .expect(400);
 
       expect(response.body).toHaveProperty("message", "email and password are required");
     });
 
     test("should return 400 if password_hash is missing", async () => {
-      const loginData = {
-        email: "test@example.com"
-      };
-
       const response = await request(app)
         .post("/auth/login")
-        .send(loginData)
+        .send({ email: "test@example.com" })
         .expect(400);
 
       expect(response.body).toHaveProperty("message", "email and password are required");
     });
 
     test("should return 401 if user does not exist", async () => {
-      const loginData = {
-        email: "nonexistent@example.com",
-        password_hash: "password123"
-      };
-
       const response = await request(app)
         .post("/auth/login")
-        .send(loginData)
+        .send({ email: "nonexistent@example.com", password_hash: "password123" })
         .expect(401);
 
       expect(response.body).toHaveProperty("message", "Invalid credentials");
     });
 
     test("should return 401 if password is incorrect", async () => {
-      const User = require("../model/userModel");
       const hashedPassword = await bcrypt.hash("correctpassword", 10);
       await User.create({
-        user_id: 1,
         username: "testuser",
         email: "test@example.com",
-        password_hash: hashedPassword
+        password_hash: hashedPassword,
       });
-
-      const loginData = {
-        email: "test@example.com",
-        password_hash: "wrongpassword"
-      };
 
       const response = await request(app)
         .post("/auth/login")
-        .send(loginData)
+        .send({ email: "test@example.com", password_hash: "wrongpassword" })
         .expect(401);
 
       expect(response.body).toHaveProperty("message", "Invalid credentials");
     });
   });
 
-  describe("POST /auth/logout - Logout", () => {
-    test("should logout successfully with valid refresh token", async () => {
-      const User = require("../model/userModel");
-      const jwt = require("jsonwebtoken");
-      
-      // Create a user
+  describe("POST /auth/refresh - Refresh Token", () => {
+    test("should return new tokens with valid refresh token", async () => {
       const hashedPassword = await bcrypt.hash("password123", 10);
       await User.create({
-        user_id: 1,
         username: "testuser",
         email: "test@example.com",
         password_hash: hashedPassword,
-        refresh_token_hash: await bcrypt.hash("some_refresh_token", 10)
       });
 
-      // Create a valid refresh token
-      const refreshToken = jwt.sign(
-        { sub: 1 },
-        process.env.JWT_REFRESH_SECRET,
-        { expiresIn: "7d" }
-      );
+      const loginResponse = await request(app)
+        .post("/auth/login")
+        .send({ email: "test@example.com", password_hash: "password123" });
 
-      const logoutData = {
-        refreshToken
-      };
+      const { refreshToken } = loginResponse.body;
+
+      const response = await request(app)
+        .post("/auth/refresh")
+        .send({ refreshToken })
+        .expect(200);
+
+      expect(response.body).toHaveProperty("accessToken");
+      expect(response.body).toHaveProperty("refreshToken");
+      expect(response.body).toHaveProperty("success", true);
+    });
+
+    test("should return 400 if refreshToken is missing", async () => {
+      const response = await request(app).post("/auth/refresh").send({}).expect(400);
+
+      expect(response.body).toHaveProperty("message", "refreshToken is required");
+    });
+
+    test("should return 401 if refresh token is invalid", async () => {
+      const response = await request(app)
+        .post("/auth/refresh")
+        .send({ refreshToken: "invalid_token" })
+        .expect(401);
+
+      expect(response.body).toHaveProperty("message", "Invalid refresh token");
+    });
+  });
+
+  describe("POST /auth/logout - Logout", () => {
+    test("should logout successfully with valid refresh token", async () => {
+      const hashedPassword = await bcrypt.hash("password123", 10);
+      await User.create({
+        username: "testuser",
+        email: "test@example.com",
+        password_hash: hashedPassword,
+      });
+
+      const loginResponse = await request(app)
+        .post("/auth/login")
+        .send({ email: "test@example.com", password_hash: "password123" });
+
+      const { refreshToken } = loginResponse.body;
 
       const response = await request(app)
         .post("/auth/logout")
-        .send(logoutData)
+        .send({ refreshToken })
         .expect(204);
 
       expect(response.body).toEqual({});
 
-      // Verify refresh token hash is removed from database
-      const user = await User.findOne({ user_id: 1 });
+      const user = await User.findOne({ email: "test@example.com" });
       expect(user.refresh_token_hash).toBeNull();
     });
 
     test("should return 400 if refreshToken is missing", async () => {
-      const logoutData = {};
-
-      const response = await request(app)
-        .post("/auth/logout")
-        .send(logoutData)
-        .expect(400);
+      const response = await request(app).post("/auth/logout").send({}).expect(400);
 
       expect(response.body).toHaveProperty("message", "refreshToken is required");
     });
 
     test("should return 204 if refresh token is invalid or expired", async () => {
-      const invalidToken = "invalid_token_string";
-
-      const logoutData = {
-        refreshToken: invalidToken
-      };
-
       const response = await request(app)
         .post("/auth/logout")
-        .send(logoutData)
+        .send({ refreshToken: "invalid_token_string" })
         .expect(204);
 
       expect(response.body).toEqual({});
     });
 
-    test("should return 204 if refresh token has invalid format", async () => {
-      const User = require("../model/userModel");
+    test("should return 204 if refresh token was signed with wrong secret", async () => {
       const jwt = require("jsonwebtoken");
-      
-      // Create a token with wrong secret
       const invalidToken = jwt.sign(
-        { sub: 1 },
+        { sub: new mongoose.Types.ObjectId().toString() },
         "wrong_secret",
         { expiresIn: "7d" }
       );
 
-      const logoutData = {
-        refreshToken: invalidToken
-      };
-
       const response = await request(app)
         .post("/auth/logout")
-        .send(logoutData)
-        .expect(204);
-
-      expect(response.body).toEqual({});
-    });
-
-    test("should logout successfully and clear refresh token even if user doesn't exist", async () => {
-      const jwt = require("jsonwebtoken");
-      
-      // Create a valid refresh token for non-existent user
-      const refreshToken = jwt.sign(
-        { sub: 999 },
-        process.env.JWT_REFRESH_SECRET,
-        { expiresIn: "7d" }
-      );
-
-      const logoutData = {
-        refreshToken
-      };
-
-      const response = await request(app)
-        .post("/auth/logout")
-        .send(logoutData)
+        .send({ refreshToken: invalidToken })
         .expect(204);
 
       expect(response.body).toEqual({});
     });
   });
 });
-
