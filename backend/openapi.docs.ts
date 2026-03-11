@@ -17,6 +17,11 @@ export {};
  *     description: Post likes endpoints
  *
  * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  *   schemas:
  *     ErrorResponse:
  *       type: object
@@ -491,6 +496,8 @@ export {};
  *   put:
  *     tags: [Posts]
  *     summary: Update post
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: post_id
@@ -514,6 +521,8 @@ export {};
  *   delete:
  *     tags: [Posts]
  *     summary: Delete post
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: post_id
@@ -559,6 +568,8 @@ export {};
  *   post:
  *     tags: [Posts]
  *     summary: Create a comment on a post
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
