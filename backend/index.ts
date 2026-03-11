@@ -12,6 +12,7 @@ import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import multerRoutes from "./routes/multerRoutes.js";
 import likeRoutes from "./routes/likeRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 import passport from "passport";
@@ -48,6 +49,8 @@ app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
 app.use("/upload", multerRoutes);
 app.use("/", likeRoutes);
+// AI smart search entrypoint. Frontend calls /api/search; backend handles AI/caching/rate-limit internally.
+app.use("/api", searchRoutes);
 app.use("/public", express.static("public"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
