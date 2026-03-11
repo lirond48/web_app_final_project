@@ -1,7 +1,7 @@
 .post-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-soft);
-  border-radius: 18px;
+  border-radius: 14px;
   overflow: hidden;
   box-shadow: var(--shadow-soft);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -21,7 +21,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  padding: 14px 16px;
+  padding: 10px 14px;
   border-bottom: 1px solid #ebf0ff;
 }
 
@@ -32,9 +32,9 @@
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   background: linear-gradient(130deg, #7c8dff 0%, #89ddc8 100%);
   color: #fff;
   display: grid;
@@ -62,11 +62,13 @@
 .post-image {
   width: 100%;
   height: auto;
+  max-height: 380px;
+  object-fit: contain;
   display: block;
 }
 
 .post-description {
-  padding: 14px 16px;
+  padding: 10px 14px;
 }
 
 .post-description p {
@@ -74,7 +76,7 @@
 }
 
 .post-actions {
-  padding: 12px 16px;
+  padding: 8px 14px;
   border-top: 1px solid #ebf0ff;
   border-bottom: 1px solid #ebf0ff;
   display: flex;
