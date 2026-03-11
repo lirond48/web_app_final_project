@@ -19,6 +19,26 @@
   justify-content: center;
 }
 
+.auth-brand-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.auth-brand-logo {
+  justify-content: center;
+}
+
+.auth-brand-wordmark .brand-logo-text {
+  font-size: clamp(2.3rem, 5vw, 3rem);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  background: linear-gradient(135deg, #7fa9ff 0%, #a7b6ff 35%, #f4a5d7 65%, #90e3cf 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 .login-header {
   margin-bottom: 22px;
 }
@@ -109,3 +129,4 @@
     padding: 24px;
   }
 }
+

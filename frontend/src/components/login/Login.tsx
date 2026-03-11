@@ -2,6 +2,7 @@ import React, { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import MarketingHero from '../ui/MarketingHero';
+import BrandLogo from '../ui/BrandLogo';
 import './Login.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -51,6 +52,9 @@ const Login: React.FC = () => {
           primaryTo="/register"
         />
         <div className="login-card ui-card" id="auth-card">
+          <div className="auth-brand-wrap">
+            <BrandLogo showImage={false} showText={true} linkTo="/" className="auth-brand-logo auth-brand-wordmark" />
+          </div>
           <div className="login-header">
             <h2>Welcome Back</h2>
             <p>Sign in to continue sharing.</p>

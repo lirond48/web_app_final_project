@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { postService, Post } from '../../services/postService';
 import { useAuth } from '../../auth/AuthContext';
 import PostComponent from '../post/Post';
+import BrandLogo from '../ui/BrandLogo';
 import './Feed.css';
 
 const LIMIT = 10;
@@ -118,7 +119,7 @@ const Feed: React.FC = () => {
     <div className="feed-container">
       <header className="feed-header">
         <div className="feed-header-content">
-          <h1>StyleShare</h1>
+          <BrandLogo showImage={false} showText={true} linkTo="/" className="feed-brand feed-brand-wordmark" />
           <div className="feed-header-actions">
             <span className="welcome-text">Welcome, {userName}!</span>
             <button
