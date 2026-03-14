@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Post from "../post/Post";
-import { searchService } from "../../services/searchService";
+import { searchService } from "../../services/search.service";
 import "./searchPage.css";
 
 const RECOMMENDED = ["Wedding", "Work", "Daily", "Sporty", "Streetwear", "Formal", "Party", "Minimal"];

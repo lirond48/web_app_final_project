@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
-import { userService, User as UserType } from "../../services/userService";
-import { Post } from "../../services/postService";
+import { userService, User as UserType } from "../../services/user.service";
+import { Post } from "../../services/post.service";
 import PostComponent from "../post/Post";
 import "./User.css";
 

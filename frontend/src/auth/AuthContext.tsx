@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { authService, LoginCredentials } from "../services/authService";
+import { authService, LoginCredentials } from "../services/auth.service";
 
 type User = { username: string; email: string; user_id: string };
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
-import { commentService, Comment } from "../../services/commentService";
-import { postService, Post } from "../../services/postService";
+import { commentService, Comment } from "../../services/comment.service";
+import { postService, Post } from "../../services/post.service";
 import "./PostCommentsPage.css";
 
 const PostCommentsPage: React.FC = () => {

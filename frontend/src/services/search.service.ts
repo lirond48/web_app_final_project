@@ -8,7 +8,7 @@
  * - No direct calls to LLM endpoints (`/api/generate`, `/api/embeddings`, or remote AI base URL).
  * - Frontend always uses backend as the only search API.
  */
-import { Post } from "./postService";
+import { Post } from "./post.service";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
 
