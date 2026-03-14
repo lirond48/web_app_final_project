@@ -3,7 +3,7 @@ const request = require("supertest");
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const userRoutes = require("../routes/userRoutes");
+const userRoutes = require("../routes/userRoutes").default;
 
 // Create test app
 const app = express();
@@ -15,102 +15,69 @@ app.use("/users", userRoutes);
 const TEST_MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/test_users";
 
 describe("Users API Tests", () => {
+  let User: any;
+
   beforeAll(async () => {
-    // Connect to test database
     await mongoose.connect(TEST_MONGODB_URI);
+    User = require("../model/userModel").default;
+    await User.syncIndexes();
   });
 
   afterAll(async () => {
-    // Clean up: close database connection
     await mongoose.connection.close();
   });
 
   beforeEach(async () => {
-    // Clean up users collection before each test
-    const User = require("../model/userModel");
     await User.deleteMany({});
   });
 
   describe("POST /users - Create User", () => {
     test("should create a new user successfully", async () => {
-      const userData = {
-        username: "testuser",
-        email: "test@example.com",
-        password_hash: "password123"
-      };
-
       const response = await request(app)
         .post("/users")
-        .send(userData)
+        .send({ username: "testuser", email: "test@example.com", password_hash: "password123" })
         .expect(201);
 
-      expect(response.body).toHaveProperty("user_id");
+      expect(response.body).toHaveProperty("_id");
       expect(response.body).toHaveProperty("username", "testuser");
       expect(response.body).toHaveProperty("email", "test@example.com");
       expect(response.body).not.toHaveProperty("password_hash");
-      expect(typeof response.body.user_id).toBe("number");
+      expect(typeof response.body._id).toBe("string");
     });
 
     test("should return 400 if username is missing", async () => {
-      const userData = {
-        email: "test@example.com",
-        password_hash: "password123"
-      };
-
       const response = await request(app)
         .post("/users")
-        .send(userData)
+        .send({ email: "test@example.com", password_hash: "password123" })
         .expect(400);
 
       expect(response.body).toHaveProperty("message", "username, email, password_hash are required");
     });
 
     test("should return 400 if email is missing", async () => {
-      const userData = {
-        username: "testuser",
-        password_hash: "password123"
-      };
-
       const response = await request(app)
         .post("/users")
-        .send(userData)
+        .send({ username: "testuser", password_hash: "password123" })
         .expect(400);
 
       expect(response.body).toHaveProperty("message", "username, email, password_hash are required");
     });
 
     test("should return 400 if password_hash is missing", async () => {
-      const userData = {
-        username: "testuser",
-        email: "test@example.com"
-      };
-
       const response = await request(app)
         .post("/users")
-        .send(userData)
+        .send({ username: "testuser", email: "test@example.com" })
         .expect(400);
 
       expect(response.body).toHaveProperty("message", "username, email, password_hash are required");
     });
 
     test("should return 409 if email already exists", async () => {
-      const User = require("../model/userModel");
-      await User.create({
-        user_id: 1,
-        username: "existinguser",
-        email: "test@example.com",
-        password_hash: "hashedpassword"
-      });
-
-      const userData = {
-        username: "newuser",
-        email: "test@example.com",
-        password_hash: "password123"
-      };
+      await User.create({ username: "existinguser", email: "test@example.com", password_hash: "hashedpassword" });
 
       const response = await request(app)
         .post("/users")
-        .send(userData)
+        .send({ username: "newuser", email: "test@example.com", password_hash: "password123" })
         .expect(409);
 
       expect(response.body).toHaveProperty("message", "Email already exists");
@@ -119,38 +86,23 @@ describe("Users API Tests", () => {
 
   describe("GET /users - Get All Users", () => {
     test("should get all users", async () => {
-      const User = require("../model/userModel");
       await User.create([
-        {
-          user_id: 1,
-          username: "user1",
-          email: "user1@example.com",
-          password_hash: "hash1"
-        },
-        {
-          user_id: 2,
-          username: "user2",
-          email: "user2@example.com",
-          password_hash: "hash2"
-        }
+        { username: "user1", email: "user1@example.com", password_hash: "hash1" },
+        { username: "user2", email: "user2@example.com", password_hash: "hash2" },
       ]);
 
-      const response = await request(app)
-        .get("/users")
-        .expect(200);
+      const response = await request(app).get("/users").expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBe(2);
-      expect(response.body[0]).toHaveProperty("user_id");
+      expect(response.body[0]).toHaveProperty("_id");
       expect(response.body[0]).toHaveProperty("username");
       expect(response.body[0]).toHaveProperty("email");
       expect(response.body[0]).not.toHaveProperty("password_hash");
     });
 
     test("should return empty array when no users exist", async () => {
-      const response = await request(app)
-        .get("/users")
-        .expect(200);
+      const response = await request(app).get("/users").expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBe(0);
@@ -158,102 +110,92 @@ describe("Users API Tests", () => {
   });
 
   describe("GET /users/:user_id - Get User by ID", () => {
-    test("should get a user by user_id", async () => {
-      const User = require("../model/userModel");
-      await User.create({
-        user_id: 1,
-        username: "testuser",
-        email: "test@example.com",
-        password_hash: "hashedpassword"
-      });
+    test("should get a user by _id", async () => {
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
 
-      const response = await request(app)
-        .get("/users/1")
-        .expect(200);
+      const response = await request(app).get(`/users/${user._id}`).expect(200);
 
-      expect(response.body).toHaveProperty("user_id", 1);
+      expect(response.body._id.toString()).toBe(user._id.toString());
       expect(response.body).toHaveProperty("username", "testuser");
       expect(response.body).toHaveProperty("email", "test@example.com");
       expect(response.body).not.toHaveProperty("password_hash");
     });
 
     test("should return 404 if user not found", async () => {
-      const response = await request(app)
-        .get("/users/999")
-        .expect(404);
+      const fakeId = new mongoose.Types.ObjectId();
+
+      const response = await request(app).get(`/users/${fakeId}`).expect(404);
 
       expect(response.body).toHaveProperty("message", "User not found");
+    });
+
+    test("should return 400 if user_id is not a valid ObjectId", async () => {
+      const response = await request(app).get("/users/not-a-valid-id").expect(400);
+
+      expect(response.body).toHaveProperty("message", "Invalid user_id format");
     });
   });
 
   describe("PUT /users/:user_id - Update User", () => {
     test("should update a user successfully", async () => {
-      const User = require("../model/userModel");
-      await User.create({
-        user_id: 1,
-        username: "oldusername",
-        email: "old@example.com",
-        password_hash: "hashedpassword"
-      });
-
-      const updateData = {
-        username: "newusername",
-        email: "new@example.com"
-      };
+      const user = await User.create({ username: "oldusername", email: "old@example.com", password_hash: "hashedpassword" });
 
       const response = await request(app)
-        .put("/users/1")
-        .send(updateData)
+        .put(`/users/${user._id}`)
+        .send({ username: "newusername", email: "new@example.com" })
         .expect(200);
 
-      expect(response.body).toHaveProperty("user_id", 1);
+      expect(response.body._id.toString()).toBe(user._id.toString());
       expect(response.body).toHaveProperty("username", "newusername");
       expect(response.body).toHaveProperty("email", "new@example.com");
       expect(response.body).not.toHaveProperty("password_hash");
     });
 
     test("should return 404 if user not found", async () => {
-      const updateData = {
-        username: "newusername"
-      };
+      const fakeId = new mongoose.Types.ObjectId();
 
       const response = await request(app)
-        .put("/users/999")
-        .send(updateData)
+        .put(`/users/${fakeId}`)
+        .send({ username: "newusername" })
         .expect(404);
 
       expect(response.body).toHaveProperty("message", "User not found");
+    });
+
+    test("should return 400 if user_id is not a valid ObjectId", async () => {
+      const response = await request(app)
+        .put("/users/not-a-valid-id")
+        .send({ username: "newusername" })
+        .expect(400);
+
+      expect(response.body).toHaveProperty("message", "Invalid user_id format");
     });
   });
 
   describe("DELETE /users/:user_id - Delete User", () => {
     test("should delete a user successfully", async () => {
-      const User = require("../model/userModel");
-      await User.create({
-        user_id: 1,
-        username: "testuser",
-        email: "test@example.com",
-        password_hash: "hashedpassword"
-      });
+      const user = await User.create({ username: "testuser", email: "test@example.com", password_hash: "hashedpassword" });
 
-      const response = await request(app)
-        .delete("/users/1")
-        .expect(204);
+      const response = await request(app).delete(`/users/${user._id}`).expect(204);
 
       expect(response.body).toEqual({});
 
-      // Verify user is deleted
-      const deletedUser = await User.findOne({ user_id: 1 });
+      const deletedUser = await User.findById(user._id);
       expect(deletedUser).toBeNull();
     });
 
     test("should return 404 if user not found", async () => {
-      const response = await request(app)
-        .delete("/users/999")
-        .expect(404);
+      const fakeId = new mongoose.Types.ObjectId();
+
+      const response = await request(app).delete(`/users/${fakeId}`).expect(404);
 
       expect(response.body).toHaveProperty("message", "User not found");
     });
+
+    test("should return 400 if user_id is not a valid ObjectId", async () => {
+      const response = await request(app).delete("/users/not-a-valid-id").expect(400);
+
+      expect(response.body).toHaveProperty("message", "Invalid user_id format");
+    });
   });
 });
-
