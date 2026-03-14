@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Post as PostType, postService } from "../../services/postService";
+import { Post as PostType, postService } from "../../services/post.service";
 import LikeButton from "../like-button/LikeButton";
 import { LikeState, likesService } from "../../services/likes-api.service";
 import { useAuth } from "../../auth/AuthContext";

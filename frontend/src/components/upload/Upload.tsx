@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { postService } from '../../services/postService';
+import { postService } from '../../services/post.service';
 import './Upload.css';
 
 const Upload: React.FC = () => {

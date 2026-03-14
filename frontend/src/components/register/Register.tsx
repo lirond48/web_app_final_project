@@ -1,6 +1,6 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { authService } from '../../services/authService';
+import { authService } from '../../services/auth.service';
 import MarketingHero from '../ui/MarketingHero';
 import BrandLogo from '../ui/BrandLogo';
 import './Register.css';

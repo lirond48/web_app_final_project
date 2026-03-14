@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { postService, Post } from '../../services/postService';
+import { postService, Post } from '../../services/post.service';
 import { useAuth } from '../../auth/AuthContext';
 import PostComponent from '../post/Post';
 import BrandLogo from '../ui/BrandLogo';

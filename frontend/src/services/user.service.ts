@@ -1,4 +1,4 @@
-import { Post } from "./postService";
+import { Post } from "./post.service";
 import { apiFetch } from "./apiFetch";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
